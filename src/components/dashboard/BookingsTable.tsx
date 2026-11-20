@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,9 @@ export function BookingsTable({
       prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
     );
     setCancelledId(id);
+    toast.info("Booking request cancelled", {
+      description: "The vendor has been notified of your cancellation.",
+    });
     setTimeout(() => setCancelledId(null), 3000);
   };
 

@@ -13,6 +13,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { WeddingService } from "@/types/wedding";
@@ -39,6 +40,9 @@ export function BookingRequestModal({
     e.preventDefault();
     // Pure presentational UI: simulate submission
     setIsSubmitted(true);
+    toast.success("Booking Request Sent!", {
+      description: `Inquiry sent to ${service.vendorName}. They will review your requested date.`,
+    });
   };
 
   const handleReset = () => {

@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import type { BookingRequest } from "@/types/wedding";
@@ -34,13 +35,25 @@ export function VendorBookingRequestsTable({
     setRequests((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: action } : r))
     );
+    const isAccept = action === "accepted";
+    const msg = isAccept
+      ? "Booking accepted! Client has been notified."
+      : "Inquiry declined. The requested date is freed up.";
     setFeedback({
-      message:
-        action === "accepted"
-          ? "Booking accepted! Client has been notified."
-          : "Inquiry declined. The requested date is freed up.",
-      isAccept: action === "accepted",
+      message: msg,
+      isAccept,
     });
+
+    if (isAccept) {
+      toast.success("Booking Accepted", {
+        description: "The couple has been notified to proceed with event planning.",
+      });
+    } else {
+      toast.info("Booking Declined", {
+        description: "The date has been released and the client notified.",
+      });
+    }
+
     setTimeout(() => setFeedback(null), 3000);
   };
 

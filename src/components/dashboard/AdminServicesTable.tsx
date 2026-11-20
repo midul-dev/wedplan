@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { MOCK_SERVICES } from "@/data/mockData";
@@ -65,13 +66,23 @@ export function AdminServicesTable({
     setServices((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
-    setFeedback(`Service "${title}" marked as ${newStatus.toUpperCase()}.`);
+    const msg = `Service "${title}" marked as ${newStatus.toUpperCase()}.`;
+    setFeedback(msg);
+    if (newStatus === "approved") {
+      toast.success("Service Approved", { description: msg });
+    } else if (newStatus === "rejected") {
+      toast.warning("Service Rejected", { description: msg });
+    } else {
+      toast.info("Status Updated", { description: msg });
+    }
     setTimeout(() => setFeedback(null), 3000);
   };
 
   const handleDelete = (id: string, title: string) => {
     setServices((prev) => prev.filter((s) => s.id !== id));
-    setFeedback(`Service "${title}" has been deleted from the directory.`);
+    const msg = `Service "${title}" has been deleted from the directory.`;
+    setFeedback(msg);
+    toast.success("Service Deleted", { description: msg });
     setTimeout(() => setFeedback(null), 3000);
   };
 

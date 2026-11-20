@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -78,6 +79,9 @@ export function AddServiceForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
+    toast.success("Service submitted for approval", {
+      description: "Our curation team will review and publish your listing shortly.",
+    });
     setTimeout(() => setIsSubmitted(false), 4000);
   };
 

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
@@ -38,11 +39,13 @@ export function VendorServicesTable({ services: initialServices }: VendorService
   const toggleAvailability = (id: string) => {
     setActiveStatusMap((prev) => {
       const nextState = !prev[id];
-      setFeedbackMessage(
-        nextState
-          ? "Service set to Active & Accepting Bookings."
-          : "Service paused from public search."
-      );
+      const msg = nextState
+        ? "Service set to Active & Accepting Bookings."
+        : "Service paused from public search.";
+      setFeedbackMessage(msg);
+      toast.success(nextState ? "Service Activated" : "Service Paused", {
+        description: msg,
+      });
       setTimeout(() => setFeedbackMessage(null), 3000);
       return { ...prev, [id]: nextState };
     });
@@ -51,6 +54,9 @@ export function VendorServicesTable({ services: initialServices }: VendorService
   const handleDelete = (id: string, title: string) => {
     setServices((prev) => prev.filter((s) => s.id !== id));
     setFeedbackMessage(`"${title}" has been deleted.`);
+    toast.success("Service Deleted", {
+      description: `"${title}" was removed from your catalog.`,
+    });
     setTimeout(() => setFeedbackMessage(null), 3000);
   };
 

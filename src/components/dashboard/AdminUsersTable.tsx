@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -59,6 +60,11 @@ export function AdminUsersTable() {
       ? `Account for ${name} has been unblocked.`
       : `Account for ${name} has been blocked and suspended from the directory.`;
     setFeedback(msg);
+    if (currentBlocked) {
+      toast.success("User Unblocked", { description: msg });
+    } else {
+      toast.error("User Blocked", { description: msg });
+    }
     setTimeout(() => setFeedback(null), 3500);
   };
 

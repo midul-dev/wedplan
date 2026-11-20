@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Upload, CheckCircle2, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MOCK_USERS } from "@/data/mockData";
@@ -36,6 +37,9 @@ export function ProfileSettingsForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaved(true);
+    toast.success("Profile saved", {
+      description: "Your account details and preferences were updated.",
+    });
     setTimeout(() => setIsSaved(false), 3000);
   };
 

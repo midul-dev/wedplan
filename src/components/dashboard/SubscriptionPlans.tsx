@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Sparkles, CreditCard, ShieldCheck, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Check, Sparkles, CreditCard, ShieldCheck, CheckCircle2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import {
   Table,
   TableBody,
@@ -20,7 +22,10 @@ export function SubscriptionPlans() {
 
   const handleUpgrade = () => {
     setShowSimulatedSuccess(true);
-    setTimeout(() => setShowSimulatedSuccess(false), 4000);
+    toast.success("Simulated Stripe Checkout initialized!", {
+      description: "In production, this redirects to Stripe Checkout with your billing interval.",
+    });
+    setTimeout(() => setShowSimulatedSuccess(false), 5000);
   };
 
   return (
@@ -188,7 +193,7 @@ export function SubscriptionPlans() {
             </ul>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 space-y-2">
             <Button
               onClick={handleUpgrade}
               className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 text-xs sm:text-sm font-medium transition-colors shadow-xs cursor-pointer"
@@ -196,6 +201,22 @@ export function SubscriptionPlans() {
               <CreditCard className="size-4 mr-2" />
               Upgrade to Premium ({billingCycle === "annual" ? "$490/yr" : "$49/mo"})
             </Button>
+            <div className="flex items-center justify-center gap-3 pt-1 text-[11px] text-zinc-500">
+              <span>Preview return pages:</span>
+              <Link
+                href="/payment-success"
+                className="text-botanical-sage hover:underline font-medium inline-flex items-center gap-1"
+              >
+                Success <ExternalLink className="size-3" />
+              </Link>
+              <span className="text-zinc-300">•</span>
+              <Link
+                href="/payment-cancel"
+                className="text-champagne-amber hover:underline font-medium inline-flex items-center gap-1"
+              >
+                Cancel <ExternalLink className="size-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
