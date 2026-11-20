@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarCheck2,
@@ -17,13 +17,16 @@ import {
   Users,
   FolderKanban,
   Receipt,
+  Loader2,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { toast } from "@/components/ui/sonner";
 import { MOCK_USERS } from "@/data/mockData";
 import { type UserProfile } from "@/types/wedding";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/lib/auth-client";
 
 interface DashboardSidebarProps {
   user?: UserProfile;
@@ -37,6 +40,8 @@ export function DashboardSidebar({
   className,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Infer effective role from pathname or user prop
   const isVendorRoute = pathname.startsWith("/dashboard/vendor");
@@ -96,6 +101,35 @@ export function DashboardSidebar({
       ],
     },
   }[role];
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Signed out successfully", {
+              description: "You have been logged out of your session.",
+            });
+            if (onCloseMobile) onCloseMobile();
+            router.push("/sign-in");
+            router.refresh();
+          },
+          onError: (ctx) => {
+            setIsSigningOut(false);
+            toast.error(ctx.error?.message || "Failed to sign out", {
+              description: "Please try again.",
+            });
+          },
+        },
+      });
+    } catch (err: unknown) {
+      setIsSigningOut(false);
+      const message =
+        err instanceof Error ? err.message : "Something went wrong while signing out.";
+      toast.error("Sign out failed", { description: message });
+    }
+  };
 
   return (
     <aside
@@ -209,13 +243,19 @@ export function DashboardSidebar({
 
       {/* Bottom Sign Out Action */}
       <div className="pt-4 border-t border-zinc-200">
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 rounded-xl transition-colors"
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <LogOut className="size-4" />
-          <span>Sign Out</span>
-        </Link>
+          {isSigningOut ? (
+            <Loader2 className="size-4 animate-spin text-rose-700 shrink-0" />
+          ) : (
+            <LogOut className="size-4 shrink-0" />
+          )}
+          <span>{isSigningOut ? "Signing Out..." : "Sign Out"}</span>
+        </button>
       </div>
     </aside>
   );

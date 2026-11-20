@@ -10,6 +10,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { MOCK_USERS } from "@/data/mockData";
 import { type UserProfile } from "@/types/wedding";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { User } from "lucide-react";
 
 interface NavbarProps {
   /**
@@ -37,9 +39,12 @@ export function Navbar({ mockUser = false }: NavbarProps) {
     { label: "Browse Services", href: "/services" },
   ];
 
-  const togglePreviewUser = () => {
-    setCurrentUser((prev) => (prev ? null : MOCK_USERS[0]));
-  };
+   const { 
+        data: session, 
+        isPending, 
+    } = useSession() 
+
+    const user = session?.user
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-zinc-200">
@@ -47,22 +52,6 @@ export function Navbar({ mockUser = false }: NavbarProps) {
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-6">
           <Logo size="md" />
-
-          {/* Optional Dev / Demo State Switcher Pill */}
-          <button
-            type="button"
-            onClick={togglePreviewUser}
-            className="hidden lg:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border border-zinc-200 transition-colors cursor-pointer select-none"
-            title="Click to toggle between Guest and Authenticated Navbar UI preview"
-          >
-            <span
-              className={cn(
-                "size-1.5 rounded-full",
-                currentUser ? "bg-botanical-sage" : "bg-zinc-400"
-              )}
-            />
-            <span>Preview: {currentUser ? "Logged In" : "Guest"}</span>
-          </button>
         </div>
 
         {/* Center: Primary Navigation Links */}
@@ -86,10 +75,9 @@ export function Navbar({ mockUser = false }: NavbarProps) {
 
         {/* Right: Actions (Guest Buttons OR Profile Dropdown) */}
         <div className="flex items-center gap-3">
-          {currentUser ? (
+          {user ? (
             <ProfileDropdown
-              user={currentUser}
-              onLogout={() => setCurrentUser(null)}
+              user={user}
             />
           ) : (
             <div className="hidden sm:flex items-center gap-3">

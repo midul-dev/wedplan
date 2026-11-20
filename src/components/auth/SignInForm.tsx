@@ -2,18 +2,69 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/lib/auth-client";
+import { toast } from "@/components/ui/sonner";
 
 export function SignInForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Pure presentational UI: no auth API logic
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    setLoading(true);
+
+    try {
+      await signIn.email(
+        {
+          email,
+          password,
+          rememberMe: false,
+        },
+        {
+          onRequest: () => {
+            setLoading(true);
+          },
+          onSuccess: (ctx) => {
+            setLoading(false);
+            const userName = (ctx.data as { user?: { name?: string; role?: string } })?.user?.name || "there";
+            const userRole = (ctx.data as { user?: { name?: string; role?: string } })?.user?.role || "customer";
+
+            toast.success(`Welcome back, ${userName}!`, {
+              description: "Signed in successfully. Redirecting to your dashboard...",
+            });
+
+            if (userRole === "admin") {
+              router.push("/dashboard/admin");
+            } else if (userRole === "vendor") {
+              router.push("/dashboard/vendor");
+            } else {
+              router.push("/dashboard/customer");
+            }
+          },
+          onError: (ctx) => {
+            setLoading(false);
+            toast.error(ctx.error?.message || "Invalid email or password", {
+              description: "Please check your login details and try again.",
+            });
+          },
+        }
+      );
+    } catch (err: unknown) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      toast.error("Sign in failed", {
+        description: message,
+      });
+    }
   };
 
   return (
@@ -28,9 +79,9 @@ export function SignInForm() {
             type="email"
             required
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+            name="email"
+            disabled={loading}
+            className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood disabled:opacity-70"
           />
         </div>
 
@@ -52,14 +103,15 @@ export function SignInForm() {
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl bg-white border-zinc-200 h-10 text-sm pr-10 focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+              name="password"
+              disabled={loading}
+              className="rounded-xl bg-white border-zinc-200 h-10 text-sm pr-10 focus-visible:ring-rosewood/30 focus-visible:border-rosewood disabled:opacity-70"
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-hidden"
+              disabled={loading}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-hidden disabled:opacity-50"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -70,9 +122,17 @@ export function SignInForm() {
         {/* Submit Rosewood CTA */}
         <Button
           type="submit"
-          className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 text-sm font-medium transition-colors shadow-xs mt-2"
+          disabled={loading}
+          className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 text-sm font-medium transition-colors shadow-xs mt-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
         >
-          Sign In
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin shrink-0" />
+              <span>Signing In...</span>
+            </span>
+          ) : (
+            "Sign In"
+          )}
         </Button>
       </form>
 
@@ -92,7 +152,8 @@ export function SignInForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-11 rounded-xl border-zinc-200 text-deep-ink hover:bg-zinc-50 font-medium text-sm flex items-center justify-center gap-2.5"
+        disabled={loading}
+        className="w-full h-11 rounded-xl border-zinc-200 text-deep-ink hover:bg-zinc-50 font-medium text-sm flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg className="size-4" viewBox="0 0 24 24">
           <path

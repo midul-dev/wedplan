@@ -2,18 +2,20 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Upload, User, Store, Check, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Upload, User, Store, Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { signUp } from "@/lib/auth-client";
 
 export function SignUpForm() {
+  const router = useRouter();
   const [role, setRole] = useState<"customer" | "vendor">("customer");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -21,9 +23,54 @@ export function SignUpForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Pure presentational UI: no auth API logic
+    const formData = new FormData(e.currentTarget);
+    const user = Object.fromEntries(formData.entries()) as {
+      email: string;
+      name: string;
+      password: string;
+      image?: string;
+    };
+
+    setLoading(true);
+
+    try {
+      await signUp.email(
+        {
+          email: user.email,
+          password: user.password,
+          name: user.name,
+          role: role,
+        },
+        {
+          onRequest: () => {
+            setLoading(true);
+          },
+          onSuccess: () => {
+            setLoading(false);
+            toast.success("Account created successfully!", {
+              description: `Welcome to WedPlan! Redirecting to your ${
+                role === "vendor" ? "vendor" : "customer"
+              } dashboard...`,
+            });
+            router.push(role === "vendor" ? "/dashboard/vendor" : "/dashboard/customer");
+          },
+          onError: (ctx) => {
+            setLoading(false);
+            toast.error(ctx.error?.message || "Failed to create account", {
+              description: "Please check your details and try again.",
+            });
+          },
+        }
+      );
+    } catch (err: unknown) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      toast.error("Registration failed", {
+        description: message,
+      });
+    }
   };
 
   return (
@@ -86,8 +133,7 @@ export function SignUpForm() {
             type="text"
             required
             placeholder="e.g. Eleanor Vance"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            name="name"
             className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
           />
         </div>
@@ -101,8 +147,7 @@ export function SignUpForm() {
             type="email"
             required
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
             className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
           />
         </div>
@@ -117,8 +162,7 @@ export function SignUpForm() {
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
               className="rounded-xl bg-white border-zinc-200 h-10 text-sm pr-10 focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
             />
             <button
@@ -173,9 +217,17 @@ export function SignUpForm() {
         {/* Submit Rosewood CTA */}
         <Button
           type="submit"
-          className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 text-sm font-medium transition-colors shadow-xs mt-2"
+          disabled={loading}
+          className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 text-sm font-medium transition-colors shadow-xs mt-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
         >
-          Create Account
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin shrink-0" />
+              <span>Creating Account...</span>
+            </span>
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
 
@@ -195,7 +247,8 @@ export function SignUpForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-11 rounded-xl border-zinc-200 text-deep-ink hover:bg-zinc-50 font-medium text-sm flex items-center justify-center gap-2.5"
+        disabled={loading}
+        className="w-full h-11 rounded-xl border-zinc-200 text-deep-ink hover:bg-zinc-50 font-medium text-sm flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg className="size-4" viewBox="0 0 24 24">
           <path

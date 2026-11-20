@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LayoutDashboard, User, LogOut, ChevronDown, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { toast } from "@/components/ui/sonner";
+import { signOut } from "@/lib/auth-client";
 import type { UserProfile } from "@/types/wedding";
 
 interface ProfileDropdownProps {
@@ -20,7 +23,30 @@ interface ProfileDropdownProps {
   onLogout?: () => void;
 }
 
-export function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
+export function ProfileDropdown({ user }: ProfileDropdownProps) {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Signed out successfully", {
+              description: "You have been logged out of your session.",
+            });
+            router.push("/sign-in");
+            router.refresh();
+          },
+          onError: (ctx) => {
+            toast.error(ctx.error?.message || "Failed to sign out");
+          },
+        },
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to sign out";
+      toast.error("Sign out failed", { description: message });
+    }
+  };
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -115,7 +141,7 @@ export function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
 
         <DropdownMenuItem
           variant="destructive"
-          onClick={onLogout}
+          onClick={handleSignOut}
           className="flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer focus:bg-rose-50 focus:text-rose-700"
         >
           <LogOut className="size-4 text-rose-600" />
