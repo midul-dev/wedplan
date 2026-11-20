@@ -11,6 +11,12 @@ import {
   ArrowLeft,
   LogOut,
   Sparkles,
+  Store,
+  PlusCircle,
+  CreditCard,
+  Users,
+  FolderKanban,
+  Receipt,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,11 +32,29 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({
-  user = MOCK_USERS[0],
+  user,
   onCloseMobile,
   className,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+
+  // Infer effective role from pathname or user prop
+  const isVendorRoute = pathname.startsWith("/dashboard/vendor");
+  const isAdminRoute = pathname.startsWith("/dashboard/admin");
+
+  const effectiveUser =
+    user ||
+    (isVendorRoute
+      ? MOCK_USERS[1] // Marcus Thorne (Vendor)
+      : isAdminRoute
+      ? MOCK_USERS[3] // Seraphina Locke (Admin)
+      : MOCK_USERS[0]); // Eleanor Vance (Customer)
+
+  const role = isVendorRoute
+    ? "vendor"
+    : isAdminRoute
+    ? "admin"
+    : effectiveUser.role || "customer";
 
   const getInitials = (name: string) => {
     return name
@@ -41,26 +65,37 @@ export function DashboardSidebar({
       .toUpperCase();
   };
 
-  const customerNavItems = [
-    {
-      label: "Overview",
-      href: "/dashboard/customer",
-      icon: LayoutDashboard,
-      exact: true,
+  // Role-based Nav Configuration
+  const navConfig = {
+    customer: {
+      title: "Customer Menu",
+      items: [
+        { label: "Overview", href: "/dashboard/customer", icon: LayoutDashboard, exact: true },
+        { label: "My Bookings", href: "/dashboard/customer/bookings", icon: CalendarCheck2, exact: false },
+        { label: "Profile Settings", href: "/dashboard/customer/profile", icon: User, exact: false },
+      ],
     },
-    {
-      label: "My Bookings",
-      href: "/dashboard/customer/bookings",
-      icon: CalendarCheck2,
-      exact: false,
+    vendor: {
+      title: "Vendor Studio",
+      items: [
+        { label: "Overview", href: "/dashboard/vendor", icon: LayoutDashboard, exact: true },
+        { label: "My Services", href: "/dashboard/vendor/services", icon: Store, exact: false },
+        { label: "Add Service", href: "/dashboard/vendor/add-service", icon: PlusCircle, exact: false },
+        { label: "Booking Requests", href: "/dashboard/vendor/bookings", icon: CalendarCheck2, exact: false },
+        { label: "Subscription", href: "/dashboard/vendor/subscription", icon: CreditCard, exact: false },
+        { label: "Profile Settings", href: "/dashboard/vendor/profile", icon: User, exact: false },
+      ],
     },
-    {
-      label: "Profile Settings",
-      href: "/dashboard/customer/profile",
-      icon: User,
-      exact: false,
+    admin: {
+      title: "Administration",
+      items: [
+        { label: "Overview", href: "/dashboard/admin", icon: LayoutDashboard, exact: true },
+        { label: "Manage Users", href: "/dashboard/admin/users", icon: Users, exact: false },
+        { label: "Manage Services", href: "/dashboard/admin/services", icon: FolderKanban, exact: false },
+        { label: "Transactions", href: "/dashboard/admin/transactions", icon: Receipt, exact: false },
+      ],
     },
-  ];
+  }[role];
 
   return (
     <aside
@@ -79,26 +114,28 @@ export function DashboardSidebar({
         <div className="p-3 bg-pure-alabaster border border-zinc-200 rounded-xl space-y-2.5">
           <div className="flex items-center gap-3">
             <Avatar className="size-10 border border-zinc-200">
-              {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+              {effectiveUser.avatar && (
+                <AvatarImage src={effectiveUser.avatar} alt={effectiveUser.name} />
+              )}
               <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-serif font-bold">
-                {getInitials(user.name)}
+                {getInitials(effectiveUser.name)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-deep-ink font-serif truncate">
-                {user.name}
+                {effectiveUser.name}
               </p>
-              <p className="text-[11px] text-zinc-500 truncate">{user.email}</p>
+              <p className="text-[11px] text-zinc-500 truncate">{effectiveUser.email}</p>
             </div>
           </div>
 
           <div className="pt-1 flex items-center justify-between border-t border-zinc-100">
             <StatusBadge
-              status={user.role}
+              status={effectiveUser.role}
               showDot={false}
               className="text-[10px] py-0 px-2 uppercase font-semibold"
             />
-            {user.vendorTier === "premium" && (
+            {effectiveUser.vendorTier === "premium" && (
               <span className="inline-flex items-center gap-1 text-[10px] text-champagne-amber font-semibold">
                 <Sparkles className="size-2.5" />
                 Premium
@@ -110,10 +147,10 @@ export function DashboardSidebar({
         {/* Primary Role-Based Nav Links */}
         <div className="space-y-1">
           <p className="px-3 text-[11px] uppercase tracking-wider font-semibold text-zinc-400">
-            Customer Menu
+            {navConfig.title}
           </p>
           <nav className="space-y-1 pt-1">
-            {customerNavItems.map((item) => {
+            {navConfig.items.map((item) => {
               const Icon = item.icon;
               const isActive = item.exact
                 ? pathname === item.href
