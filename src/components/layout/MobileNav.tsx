@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
-import { SERVICE_CATEGORIES, type UserProfile } from "@/types/wedding";
+import { SERVICE_CATEGORIES, type IUser } from "@/types/wedding";
 import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
-  user?: UserProfile | null;
+  user?: IUser | null;
   onLogout?: () => void;
 }
 

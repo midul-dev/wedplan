@@ -16,13 +16,23 @@ export type BookingStatus = "pending" | "accepted" | "rejected" | "paid" | "comp
 export type TransactionStatus = "paid" | "pending" | "failed";
 export type SubscriptionPlan = "free" | "premium_monthly" | "premium_annual";
 
-export interface UserProfile {
+export interface IUser {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  vendorTier?: VendorTier;
+  role: UserRole | string;
+  image?: string | null;
   avatar?: string;
+  vendorTier?: VendorTier;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  businessName?: string;
+  createdAt?: string | Date;
+}
+
+export interface UserProfile extends IUser {
+  role: UserRole;
   phone?: string;
   location?: string;
   bio?: string;

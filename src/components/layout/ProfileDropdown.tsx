@@ -16,11 +16,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "@/components/ui/sonner";
 import { signOut } from "@/lib/auth-client";
-import type { UserProfile } from "@/types/wedding";
+import type { IUser } from "@/types/wedding";
 
 interface ProfileDropdownProps {
-  user: UserProfile;
-  onLogout?: () => void;
+  user: IUser;
 }
 
 export function ProfileDropdown({ user }: ProfileDropdownProps) {
@@ -75,7 +74,12 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2.5 p-1 rounded-full hover:bg-zinc-100 transition-colors focus:outline-hidden cursor-pointer">
         <Avatar className="size-9 border border-zinc-200">
-          {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+          {(user.avatar || user.image) && (
+            <AvatarImage
+              src={(user.avatar || user.image) as string}
+              alt={user.name}
+            />
+          )}
           <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-semibold font-serif">
             {getInitials(user.name)}
           </AvatarFallback>

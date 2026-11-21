@@ -21,15 +21,16 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "@/components/ui/sonner";
 import { MOCK_USERS } from "@/data/mockData";
-import { type UserProfile } from "@/types/wedding";
+import { type UserProfile, type IUser } from "@/types/wedding";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth-client";
 
 interface DashboardSidebarProps {
-  user?: UserProfile;
+  user?: IUser;
   onCloseMobile?: () => void;
   className?: string;
 }
@@ -47,19 +48,15 @@ export function DashboardSidebar({
   const isVendorRoute = pathname.startsWith("/dashboard/vendor");
   const isAdminRoute = pathname.startsWith("/dashboard/admin");
 
-  const effectiveUser =
-    user ||
-    (isVendorRoute
-      ? MOCK_USERS[1] // Marcus Thorne (Vendor)
-      : isAdminRoute
-      ? MOCK_USERS[3] // Seraphina Locke (Admin)
-      : MOCK_USERS[0]); // Eleanor Vance (Customer)
+  const effectiveUser = user;
 
-  const role = isVendorRoute
+  const role: "customer" | "vendor" | "admin" = isVendorRoute
     ? "vendor"
     : isAdminRoute
     ? "admin"
-    : effectiveUser.role || "customer";
+    : effectiveUser?.role === "vendor" || effectiveUser?.role === "admin"
+    ? (effectiveUser.role as "vendor" | "admin")
+    : "customer";
 
   const getInitials = (name: string) => {
     return name
@@ -146,36 +143,56 @@ export function DashboardSidebar({
 
         {/* User Identity Header */}
         <div className="p-3 bg-pure-alabaster border border-zinc-200 rounded-xl space-y-2.5">
-          <div className="flex items-center gap-3">
-            <Avatar className="size-10 border border-zinc-200">
-              {effectiveUser.avatar && (
-                <AvatarImage src={effectiveUser.avatar} alt={effectiveUser.name} />
-              )}
-              <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-serif font-bold">
-                {getInitials(effectiveUser.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-deep-ink font-serif truncate">
-                {effectiveUser.name}
-              </p>
-              <p className="text-[11px] text-zinc-500 truncate">{effectiveUser.email}</p>
-            </div>
-          </div>
+          {effectiveUser ? (
+            <>
+              <div className="flex items-center gap-3">
+                <Avatar className="size-10 border border-zinc-200">
+                  {(effectiveUser.avatar || effectiveUser.image) && (
+                    <AvatarImage
+                      src={(effectiveUser.avatar || effectiveUser.image) as string}
+                      alt={effectiveUser.name}
+                    />
+                  )}
+                  <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-serif font-bold">
+                    {getInitials(effectiveUser.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-deep-ink font-serif truncate">
+                    {effectiveUser.name}
+                  </p>
+                  <p className="text-[11px] text-zinc-500 truncate">{effectiveUser.email}</p>
+                </div>
+              </div>
 
-          <div className="pt-1 flex items-center justify-between border-t border-zinc-100">
-            <StatusBadge
-              status={effectiveUser.role}
-              showDot={false}
-              className="text-[10px] py-0 px-2 uppercase font-semibold"
-            />
-            {effectiveUser.vendorTier === "premium" && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-champagne-amber font-semibold">
-                <Sparkles className="size-2.5" />
-                Premium
-              </span>
-            )}
-          </div>
+              <div className="pt-1 flex items-center justify-between border-t border-zinc-100">
+                <StatusBadge
+                  status={effectiveUser.role}
+                  showDot={false}
+                  className="text-[10px] py-0 px-2 uppercase font-semibold"
+                />
+                {effectiveUser.vendorTier === "premium" && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-champagne-amber font-semibold">
+                    <Sparkles className="size-2.5" />
+                    Premium
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-10 rounded-full" />
+                <div className="space-y-1.5 flex-1">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-2.5 w-32" />
+                </div>
+              </div>
+              <div className="pt-1 border-t border-zinc-100 flex justify-between">
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Primary Role-Based Nav Links */}

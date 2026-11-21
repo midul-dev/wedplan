@@ -104,7 +104,7 @@ export function Navbar({ mockUser = false }: NavbarProps) {
 
           {/* Mobile Sheet Trigger */}
           <MobileNav
-            user={currentUser}
+            user={user || currentUser}
             onLogout={() => setCurrentUser(null)}
           />
         </div>

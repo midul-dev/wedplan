@@ -1,14 +1,25 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CalendarCheck2, Clock, CheckCircle2, XCircle, Search } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { BookingsTable } from "@/components/dashboard/BookingsTable";
 import { buttonVariants } from "@/components/ui/button";
-import { MOCK_BOOKINGS, MOCK_USERS } from "@/data/mockData";
+import { MOCK_BOOKINGS } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export default function CustomerOverviewPage() {
-  const user = MOCK_USERS[0];
+export default async function CustomerOverviewPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
+  const user = session.user;
   const pendingCount = MOCK_BOOKINGS.filter((b) => b.status === "pending").length;
   const acceptedCount = MOCK_BOOKINGS.filter((b) => b.status === "accepted").length;
   const rejectedCount = MOCK_BOOKINGS.filter((b) => b.status === "rejected").length;

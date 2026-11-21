@@ -1,13 +1,23 @@
 import React from "react";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
-import { MOCK_USERS } from "@/data/mockData";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Profile Settings — WedPlan",
   description: "Update your personal information and contact preferences.",
 };
 
-export default function CustomerProfilePage() {
+export default async function CustomerProfilePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -24,7 +34,7 @@ export default function CustomerProfilePage() {
       </div>
 
       {/* Form */}
-      <ProfileSettingsForm user={MOCK_USERS[0]} />
+      <ProfileSettingsForm user={session.user} />
     </div>
   );
 }

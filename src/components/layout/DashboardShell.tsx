@@ -12,17 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { Logo } from "@/components/shared/Logo";
-import { MOCK_USERS } from "@/data/mockData";
-import type { UserProfile } from "@/types/wedding";
+import type { IUser } from "@/types/wedding";
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  user?: UserProfile;
+  user?: IUser;
 }
 
 export function DashboardShell({
   children,
-  user = MOCK_USERS[0],
+  user,
 }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 

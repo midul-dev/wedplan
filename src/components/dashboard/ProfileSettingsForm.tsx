@@ -1,31 +1,31 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, CheckCircle2, Lock, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Upload, CheckCircle2, AlertCircle, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MOCK_USERS } from "@/data/mockData";
-import type { UserProfile } from "@/types/wedding";
+import type { IUser } from "@/types/wedding";
+import { authClient } from "@/lib/auth-client";
 
 interface ProfileSettingsFormProps {
-  user?: UserProfile;
+  user?: IUser;
 }
 
-export function ProfileSettingsForm({
-  user = MOCK_USERS[0],
-}: ProfileSettingsFormProps) {
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [phone, setPhone] = useState(user.phone || "+1 (555) 234-8901");
-  const [location, setLocation] = useState(user.location || "San Francisco, CA");
-  const [bio, setBio] = useState(user.bio || "");
-  const [avatarUrl, setAvatarUrl] = useState(user.avatar || "");
-  const [businessName, setBusinessName] = useState(user.businessName || "");
+export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
+  const router = useRouter();
+  const [businessName, setBusinessName] = useState(user?.businessName || "");
+  const [avatarUrl, setAvatarUrl] = useState(
+    user?.avatar || (user?.image as string) || "",
+  );
+  const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const getInitials = (n: string) => {
+    if (!n) return "U";
     return n
       .split(" ")
       .map((p) => p[0])
@@ -34,19 +34,68 @@ export function ProfileSettingsForm({
       .toUpperCase();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSaved(true);
-    toast.success("Profile saved", {
-      description: "Your account details and preferences were updated.",
-    });
-    setTimeout(() => setIsSaved(false), 3000);
+    setIsSaving(true);
+    setErrorMessage(null);
+    setIsSaved(false);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+
+    try {
+      await authClient.updateUser(
+        {
+          name,
+          image: avatarUrl || undefined,
+        },
+        {
+          onSuccess: () => {
+            setIsSaving(false);
+            setIsSaved(true);
+            toast.success("Profile saved successfully", {
+              description: "Your account details and preferences were updated.",
+            });
+            router.refresh();
+            setIsSaved(false);
+          },
+          onError: (ctx) => {
+            setIsSaving(false);
+            const err = ctx.error?.message || "Failed to update profile";
+            setErrorMessage(err);
+            toast.error("Profile update failed", {
+              description: err,
+            });
+          },
+        },
+      );
+    } catch (err: unknown) {
+      setIsSaving(false);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while saving your profile";
+      setErrorMessage(msg);
+      toast.error("Profile update failed", {
+        description: msg,
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setAvatarUrl(URL.createObjectURL(file));
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("File too large", {
+          description: "Please upload an image smaller than 2MB.",
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -54,18 +103,25 @@ export function ProfileSettingsForm({
     <div className="max-w-2xl bg-pure-alabaster border border-zinc-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
       {isSaved && (
         <div className="p-3.5 bg-emerald-50 text-botanical-sage border border-emerald-200 rounded-xl text-xs flex items-center gap-2">
-          <CheckCircle2 className="size-4 shrink-0" />
+          <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
           <span>Profile preferences saved successfully.</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {errorMessage && (
+        <div className="p-3.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs flex items-center gap-2">
+          <AlertCircle className="size-4 shrink-0 text-rose-600" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleUpdateProfile} className="space-y-6">
         {/* Profile Avatar Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-4 rounded-xl bg-soft-pearl/70 border border-zinc-200/80">
           <Avatar className="size-18 border-2 border-white shadow-xs">
-            {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={user?.name || ""} />}
             <AvatarFallback className="bg-rose-50 text-rosewood text-lg font-serif font-bold">
-              {getInitials(name)}
+              {getInitials(user?.name || "")}
             </AvatarFallback>
           </Avatar>
 
@@ -75,7 +131,7 @@ export function ProfileSettingsForm({
                 Profile Photo
               </p>
               <p className="text-xs text-zinc-500">
-                Recommended 400x400px. JPG, PNG or WebP.
+                Recommended 400x400px. JPG, PNG or WebP (max 2MB).
               </p>
             </div>
 
@@ -100,62 +156,41 @@ export function ProfileSettingsForm({
             </label>
             <Input
               type="text"
+              name="name"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              defaultValue={user?.name || ""}
+              disabled={isSaving}
               className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
             />
           </div>
 
           <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-deep-ink">
-              Email Address
+            <label className="text-xs font-semibold text-deep-ink flex items-center justify-between">
+              <span>Email Address</span>
+              <Lock className="size-3 text-zinc-400" />
             </label>
             <Input
               type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
-            />
-          </div>
-
-          <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-deep-ink">
-              Phone Number
-            </label>
-            <Input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
-            />
-          </div>
-
-          <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-deep-ink">
-              City / Location
-            </label>
-            <Input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+              disabled
+              value={user?.email || ""}
+              className="rounded-xl bg-zinc-100 border-zinc-200 h-10 text-sm text-zinc-600 cursor-not-allowed"
             />
           </div>
         </div>
 
         {/* Optional Business Name (Visible for Vendors or Optional) */}
-        {user.role === "vendor" && (
+        {user?.role === "vendor" && (
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-deep-ink">
               Business / Studio Name
             </label>
             <Input
               type="text"
+              name="businessName"
               placeholder="e.g. Velvet & Vine Botanical Florals"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
+              disabled={isSaving}
               className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
             />
           </div>
@@ -178,7 +213,7 @@ export function ProfileSettingsForm({
                 <Input
                   type="text"
                   disabled
-                  value={user.role.toUpperCase()}
+                  value={(user?.role || "customer").toUpperCase()}
                   className="rounded-xl bg-zinc-100 border-zinc-200 h-10 text-xs font-semibold text-zinc-600 uppercase cursor-not-allowed"
                 />
               </div>
@@ -195,7 +230,7 @@ export function ProfileSettingsForm({
                   type="text"
                   disabled
                   value={
-                    user.vendorTier === "premium"
+                    user?.vendorTier === "premium"
                       ? "Premium Vendor Plan"
                       : "Standard Customer Tier"
                   }
@@ -210,9 +245,17 @@ export function ProfileSettingsForm({
         <div className="pt-2">
           <Button
             type="submit"
-            className="bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-6 text-sm font-medium transition-colors shadow-xs"
+            disabled={isSaving}
+            className="bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-6 text-sm font-medium transition-colors shadow-xs disabled:opacity-60 cursor-pointer"
           >
-            Save Profile Changes
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin shrink-0" />
+                Saving Changes...
+              </span>
+            ) : (
+              "Save Profile Changes"
+            )}
           </Button>
         </div>
       </form>
