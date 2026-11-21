@@ -1,15 +1,23 @@
 import React from "react";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
 import { MOCK_USERS } from "@/data/mockData";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Studio Profile Settings — WedPlan",
   description: "Manage your business name, contact information, and public artisan profile.",
 };
 
-export default function VendorProfilePage() {
-  const vendorUser = MOCK_USERS[1]; // Marcus Thorne (Vendor with business name)
-
+export default async function VendorProfilePage() {
+  const session = await auth.api.getSession({
+     headers: await headers(),
+   });
+ 
+   if (!session?.user) {
+     redirect("/sign-in");
+   }
   return (
     <div className="space-y-6">
       <div className="pb-6 border-b border-zinc-200 space-y-1">
@@ -24,7 +32,7 @@ export default function VendorProfilePage() {
         </p>
       </div>
 
-      <ProfileSettingsForm user={vendorUser} />
+      <ProfileSettingsForm user={session.user} />
     </div>
   );
 }

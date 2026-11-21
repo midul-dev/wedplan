@@ -6,9 +6,21 @@ import { VendorBookingRequestsTable } from "@/components/dashboard/VendorBooking
 import { buttonVariants } from "@/components/ui/button";
 import { MOCK_BOOKINGS, MOCK_SERVICES, MOCK_USERS } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { IUser } from "@/types/wedding";
 
-export default function VendorOverviewPage() {
-  const vendorUser = MOCK_USERS[1]; // Marcus Thorne
+export default async function VendorOverviewPage() {
+ const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
+  const vendorUser: IUser = session.user; 
   const vendorServices = MOCK_SERVICES.filter(
     (s) => s.vendorId === vendorUser.id || s.vendorTier === "free"
   );

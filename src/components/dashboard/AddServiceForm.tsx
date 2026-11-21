@@ -59,26 +59,25 @@ export function AddServiceForm({
   isFreeLimitReached = false,
   currentActiveCount = 2,
 }: AddServiceFormProps) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<ServiceCategory>("Wedding Venues");
-  const [price, setPrice] = useState("");
-  const [priceUnit, setPriceUnit] = useState("starting package");
-  const [location, setLocation] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState()
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setImageUrl(file)
       setPreviewImage(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitted(true);
+    const formData = new FormData(e.currentTarget)
+    const data = Object.fromEntries(formData.entries())
+    const jobData = {...data, image : imageUrl}
+    console.log(jobData)
     toast.success("Service submitted for approval", {
       description: "Our curation team will review and publish your listing shortly.",
     });
@@ -122,8 +121,7 @@ export function AddServiceForm({
             type="text"
             required
             placeholder="e.g. The Grand Manor & Rose Gardens or Full-Day Cinema Reel"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            name="title"
             disabled={isFreeLimitReached}
             className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
           />
@@ -137,8 +135,7 @@ export function AddServiceForm({
               Wedding Discipline / Category
             </label>
             <Select
-              value={category}
-              onValueChange={(val) => setCategory(val as ServiceCategory)}
+              name="category"
               disabled={isFreeLimitReached}
             >
               <SelectTrigger className="w-full h-10 rounded-xl bg-white border-zinc-200 text-sm font-sans">
@@ -165,16 +162,14 @@ export function AddServiceForm({
                 required
                 min="0"
                 placeholder="4200"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                name="price"
                 disabled={isFreeLimitReached}
                 className="w-1/2 rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
               />
               <Input
                 type="text"
                 placeholder="e.g. per event"
-                value={priceUnit}
-                onChange={(e) => setPriceUnit(e.target.value)}
+                name="priceUnit"
                 disabled={isFreeLimitReached}
                 className="w-1/2 rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
               />
@@ -192,8 +187,7 @@ export function AddServiceForm({
               type="text"
               required
               placeholder="e.g. Napa Valley, CA or Portland, OR"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              name="location"
               disabled={isFreeLimitReached}
               className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
             />
@@ -206,8 +200,7 @@ export function AddServiceForm({
             <Input
               type="text"
               placeholder="e.g. Up to 350 Guests or 8 Hours Coverage"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
+              name="capacity"
               disabled={isFreeLimitReached}
               className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
             />
@@ -223,8 +216,7 @@ export function AddServiceForm({
             rows={4}
             required
             placeholder="Describe your craft, materials, style, experience, and what makes your celebration offering extraordinary..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            name="description"
             disabled={isFreeLimitReached}
             className="rounded-xl bg-white border-zinc-200 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood leading-relaxed"
           />
@@ -233,7 +225,7 @@ export function AddServiceForm({
         {/* ImgBB-Ready File Upload Dropzone Preview */}
         <div className="space-y-1.5 text-left">
           <label className="text-xs font-semibold text-deep-ink flex items-center justify-between">
-            <span>Primary Showcase Photo (ImgBB Ready)</span>
+            <span>Primary Showcase Photo (Up to 6 files, uploaded to ImgBB)</span>
             <span className="text-[10px] text-zinc-400">Aspect 4:3 recommended</span>
           </label>
 
@@ -270,7 +262,7 @@ export function AddServiceForm({
                     Click to select or drag photo here
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    ImgBB Direct Upload Ready (JPG, PNG, WebP up to 10MB)
+                    PNG, JPG, or WebP up to 5MB each. First image is used as the cover.
                   </p>
                 </div>
               </div>

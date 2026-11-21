@@ -129,7 +129,7 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
             className="flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-deep-ink rounded-lg hover:bg-soft-pearl cursor-pointer"
           >
             <LayoutDashboard className="size-4 text-zinc-500" />
-            <span>Dashboard Overview</span>
+            <span>Dashboard</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
