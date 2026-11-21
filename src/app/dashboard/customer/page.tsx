@@ -1,7 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarCheck2, Clock, CheckCircle2, XCircle, Search } from "lucide-react";
+import {
+  CalendarCheck2,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Search,
+} from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { BookingsTable } from "@/components/dashboard/BookingsTable";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,14 +21,16 @@ export default async function CustomerOverviewPage() {
     headers: await headers(),
   });
 
-  if (!session?.user) {
-    redirect("/sign-in");
-  }
-
-  const user = session.user;
-  const pendingCount = MOCK_BOOKINGS.filter((b) => b.status === "pending").length;
-  const acceptedCount = MOCK_BOOKINGS.filter((b) => b.status === "accepted").length;
-  const rejectedCount = MOCK_BOOKINGS.filter((b) => b.status === "rejected").length;
+  const userName = session?.user?.name ?? "Guest";
+  const pendingCount = MOCK_BOOKINGS.filter(
+    (b) => b.status === "pending",
+  ).length;
+  const acceptedCount = MOCK_BOOKINGS.filter(
+    (b) => b.status === "accepted",
+  ).length;
+  const rejectedCount = MOCK_BOOKINGS.filter(
+    (b) => b.status === "rejected",
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -33,10 +41,11 @@ export default async function CustomerOverviewPage() {
             Customer Dashboard
           </p>
           <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-deep-ink tracking-tight">
-            Welcome back, {user.name}
+            Welcome back, {userName}
           </h1>
           <p className="text-xs sm:text-sm text-zinc-600 font-sans">
-            Review your celebration milestones, vendor responses, and active date requests.
+            Review your celebration milestones, vendor responses, and active
+            date requests.
           </p>
         </div>
 
@@ -45,7 +54,7 @@ export default async function CustomerOverviewPage() {
             href="/services"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-4 text-xs sm:text-sm font-medium shadow-xs"
+              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-4 text-xs sm:text-sm font-medium shadow-xs",
             )}
           >
             <Search className="size-3.5 mr-1.5" />

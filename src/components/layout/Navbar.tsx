@@ -7,6 +7,7 @@ import { Logo } from "@/components/shared/Logo";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MOCK_USERS } from "@/data/mockData";
 import { type UserProfile } from "@/types/wedding";
 import { cn } from "@/lib/utils";
@@ -73,9 +74,17 @@ export function Navbar({ mockUser = false }: NavbarProps) {
           })}
         </nav>
 
-        {/* Right: Actions (Guest Buttons OR Profile Dropdown) */}
+        {/* Right: Actions (Loading Skeleton OR Profile Dropdown OR Guest Buttons) */}
         <div className="flex items-center gap-3">
-          {user ? (
+          {isPending ? (
+            <div className="flex items-center gap-2.5 p-1">
+              <Skeleton className="size-9 rounded-full" />
+              <div className="hidden sm:flex flex-col gap-1.5 text-left">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-2.5 w-12" />
+              </div>
+            </div>
+          ) : user ? (
             <ProfileDropdown
               user={user}
             />
