@@ -108,7 +108,8 @@ const formData = new FormData();
     const formData = new FormData(e.currentTarget)
     const data = Object.fromEntries(formData.entries())
     const jobData = {...data, image : imageUrl}
-    console.log(jobData)
+
+    
     toast.success("Service submitted for approval", {
       description: "Our curation team will review and publish your listing shortly.",
     });
@@ -146,7 +147,7 @@ const formData = new FormData();
         {/* Service Name */}
         <div className="space-y-1.5 text-left">
           <label className="text-xs font-semibold text-deep-ink">
-            Service Title / Package Name
+            Service Title / Package Name<span className="text-red-600">*</span>
           </label>
           <Input
             type="text"
@@ -163,11 +164,12 @@ const formData = new FormData();
           {/* Category Select */}
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-deep-ink">
-              Wedding Discipline / Category
+              Wedding Discipline / Category<span className="text-red-600">*</span>
             </label>
             <Select
               name="category"
               disabled={isFreeLimitReached}
+              required
             >
               <SelectTrigger className="w-full h-10 rounded-xl bg-white border-zinc-200 text-sm font-sans">
                 <SelectValue placeholder="Select Category" />
@@ -185,7 +187,7 @@ const formData = new FormData();
           {/* Price & Unit */}
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-deep-ink">
-              Base Price (USD)
+              Base Price (USD)<span className="text-red-600">*</span>
             </label>
             <div className="flex gap-2">
               <Input
@@ -212,7 +214,7 @@ const formData = new FormData();
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-deep-ink">
-              Location / Service Area
+              Location / Service Area<span className="text-red-600">*</span>
             </label>
             <Input
               type="text"
@@ -241,7 +243,7 @@ const formData = new FormData();
         {/* Description Textarea */}
         <div className="space-y-1.5 text-left">
           <label className="text-xs font-semibold text-deep-ink">
-            Editorial Service Description
+            Editorial Service Description<span className="text-red-600">*</span>
           </label>
           <Textarea
             rows={4}
@@ -256,7 +258,7 @@ const formData = new FormData();
         {/* ImgBB-Ready File Upload Dropzone Preview */}
         <div className="space-y-1.5 text-left">
           <label className="text-xs font-semibold text-deep-ink flex items-center justify-between">
-            <span>Primary Showcase Photo (Up to 6 files, uploaded to ImgBB)</span>
+            <span>Primary Showcase Photo (Up to 6 files, uploaded to ImgBB)<span className="text-red-600">*</span></span>
             <span className="text-[10px] text-zinc-400">Aspect 4:3 recommended</span>
           </label>
 

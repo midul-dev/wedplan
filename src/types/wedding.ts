@@ -41,6 +41,11 @@ export interface UserProfile extends IUser {
   createdAt: string;
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 export interface ServicePackage {
   id: string;
   name: string;
