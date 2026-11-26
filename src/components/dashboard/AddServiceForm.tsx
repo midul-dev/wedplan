@@ -2,7 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Upload,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
@@ -14,8 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SERVICE_CATEGORIES, ServiceCategory } from "@/types/wedding";
+import {
+  ApiResponse,
+  SERVICE_CATEGORIES,
+  ServiceCategory,
+  WeddingService,
+} from "@/types/wedding";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/fetcher";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
 
 interface AddServiceFormProps {
   isFreeLimitReached?: boolean;
@@ -34,7 +48,9 @@ export function FreeLimitBanner() {
             Free Vendor Limit Reached (3 of 3 Active Services)
           </h4>
           <p className="font-sans text-xs text-amber-900/80 leading-relaxed max-w-xl">
-            You have reached the maximum allowed services on the Free Vendor tier. Upgrade to Premium for unlimited listings, the Premium Vendor Badge, and priority search placement.
+            You have reached the maximum allowed services on the Free Vendor
+            tier. Upgrade to Premium for unlimited listings, the Premium Vendor
+            Badge, and priority search placement.
           </p>
         </div>
       </div>
@@ -44,7 +60,7 @@ export function FreeLimitBanner() {
           href="/dashboard/vendor/subscription"
           className={cn(
             buttonVariants({ variant: "default" }),
-            "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-9 px-4 text-xs font-medium shadow-xs"
+            "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-9 px-4 text-xs font-medium shadow-xs",
           )}
         >
           <span>Upgrade Plan</span>
@@ -59,21 +75,25 @@ export function AddServiceForm({
   isFreeLimitReached = false,
   currentActiveCount = 2,
 }: AddServiceFormProps) {
-  const [imageUrl, setImageUrl] = useState<File | null>(null);
+  const { data: session, isPending } = useSession();
+  const router = useRouter()
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  const user = session?.user
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if(!file) return;
-      if (file.size > 5 * 1024 * 1024) {
-            toast.error("File too large", {
-              description: "Please upload an image smaller than 5MB.",
-            });
-            return;
-      
-  };
-const formData = new FormData();
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large", {
+        description: "Please upload an image smaller than 5MB.",
+      });
+      return;
+    }
+    const formData = new FormData();
     formData.append("image", file);
 
     const toastId = toast.loading("Uploading image...");
@@ -88,8 +108,8 @@ const formData = new FormData();
       );
       const data = await res.json();
       if (data.success) {
-        setImageUrl(data.data.display_url); 
-        setPreviewImage(data.data.display_url)
+        setImageUrl(data.data.display_url);
+        setPreviewImage(data.data.display_url);
         toast.success("Image uploaded!", { id: toastId });
       } else {
         throw new Error(data.error?.message || "Upload failed");
@@ -100,20 +120,59 @@ const formData = new FormData();
         description: "Something went wrong while uploading.",
       });
     }
-}
+  };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    const formData = new FormData(e.currentTarget)
-    const data = Object.fromEntries(formData.entries())
-    const jobData = {...data, image : imageUrl}
 
-    
-    toast.success("Service submitted for approval", {
-      description: "Our curation team will review and publish your listing shortly.",
-    });
-    setTimeout(() => setIsSubmitted(false), 4000);
+    if (!imageUrl) {
+      toast.error("Please upload a showcase photo first.");
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    if (!data.category) {
+      toast.error("Please select a wedding category.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const serviceData = {
+      ...data,
+      price: Number(data.price),
+      image: imageUrl,
+      vendorId: user?.id,
+      vendorEmail: user?.email,
+      vendorName: user?.name,
+    };
+
+    try {
+      const res = await apiFetch<ApiResponse<WeddingService>>("/service", {
+        method: "POST",
+        body: JSON.stringify(serviceData),
+      });
+      console.log("Create service response:", res);
+
+      if (res.success) {
+        setIsSubmitted(true);
+        toast.success("Service submitted for approval", {
+          description: "Our curation team will review and publish your listing shortly.",
+        });
+        router.push("/dashboard/vendor/services");
+        router.refresh();
+      } else {
+        toast.error("Failed to submit service.");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -125,7 +184,8 @@ const formData = new FormData();
         <div className="p-4 bg-emerald-50 text-botanical-sage border border-emerald-200 rounded-2xl text-xs flex items-center gap-2.5">
           <CheckCircle2 className="size-4 shrink-0" />
           <span>
-            Service submitted successfully! It has been routed to platform curators for review.
+            Service submitted successfully! It has been routed to platform
+            curators for review.
           </span>
         </div>
       )}
@@ -140,7 +200,8 @@ const formData = new FormData();
             Service Details
           </h2>
           <p className="text-xs text-zinc-500 font-sans">
-            Provide transparent pricing, high-resolution imagery, and clear service inclusions.
+            Provide transparent pricing, high-resolution imagery, and clear
+            service inclusions.
           </p>
         </div>
 
@@ -164,13 +225,10 @@ const formData = new FormData();
           {/* Category Select */}
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-deep-ink">
-              Wedding Discipline / Category<span className="text-red-600">*</span>
+              Wedding Discipline / Category
+              <span className="text-red-600">*</span>
             </label>
-            <Select
-              name="category"
-              disabled={isFreeLimitReached}
-              required
-            >
+            <Select name="category" disabled={isFreeLimitReached} required>
               <SelectTrigger className="w-full h-10 rounded-xl bg-white border-zinc-200 text-sm font-sans">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
@@ -258,8 +316,13 @@ const formData = new FormData();
         {/* ImgBB-Ready File Upload Dropzone Preview */}
         <div className="space-y-1.5 text-left">
           <label className="text-xs font-semibold text-deep-ink flex items-center justify-between">
-            <span>Primary Showcase Photo (Up to 6 files, uploaded to ImgBB)<span className="text-red-600">*</span></span>
-            <span className="text-[10px] text-zinc-400">Aspect 4:3 recommended</span>
+            <span>
+              Primary Showcase Photo (Up to 6 files, uploaded to ImgBB)
+              <span className="text-red-600">*</span>
+            </span>
+            <span className="text-[10px] text-zinc-400">
+              Aspect 4:3 recommended
+            </span>
           </label>
 
           <label className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-200 rounded-xl bg-soft-pearl/30 hover:bg-soft-pearl/60 transition-colors cursor-pointer text-center">
@@ -295,7 +358,8 @@ const formData = new FormData();
                     Click to select or drag photo here
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    PNG, JPG, or WebP up to 5MB each. First image is used as the cover.
+                    PNG, JPG, or WebP up to 5MB each. First image is used as the
+                    cover.
                   </p>
                 </div>
               </div>
@@ -307,10 +371,10 @@ const formData = new FormData();
         <div className="pt-2">
           <Button
             type="submit"
-            disabled={isFreeLimitReached}
+            disabled={isFreeLimitReached || isSubmitting || isPending}
             className="bg-rosewood hover:bg-rosewood-hover disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl h-11 px-8 text-sm font-medium transition-colors shadow-xs"
           >
-            Submit Service for Review
+            {isSubmitting ? "Submitting..." : "Submit Service for Review"}
           </Button>
         </div>
       </form>
