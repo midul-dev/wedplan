@@ -52,7 +52,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border tracking-wide select-none transition-colors",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border select-none transition-colors",
         colorClasses,
         className
       )}

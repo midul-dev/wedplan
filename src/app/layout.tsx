@@ -5,22 +5,22 @@ import "./globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-playfair",
   display: "swap",
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-jakarta",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "WedPlan — Wedding Planning Platform",
+  title: "WedPlan — Wedding Planning Directory",
   description:
-    "An elegant editorial wedding planning platform connecting couples with premier venues, photographers, florists, and artisans.",
+    "Discover vetted wedding venues, documentary photographers, florists, and couture ateliers for your celebration.",
 };
 
 export default function RootLayout({

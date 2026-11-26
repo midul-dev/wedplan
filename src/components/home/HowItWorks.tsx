@@ -31,44 +31,44 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <div className="w-full bg-deep-ink text-white">
+    <div className="w-full bg-deep-ink text-pure-alabaster">
       <MotionSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Editorial Section Header with Dark Palette */}
-        <div className="max-w-3xl mb-12 sm:mb-16 space-y-3">
-          <p className="text-xs uppercase tracking-widest font-semibold text-rose-300">
-            A Frictionless Journey
+        <div className="max-w-3xl mb-12 space-y-2">
+          <p className="text-xs font-medium text-rose-300">
+            Three-step booking
           </p>
-          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-white">
-            How WedPlan Works
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-pure-alabaster">
+            How WedPlan works
           </h2>
-          <p className="text-sm sm:text-base text-zinc-300/80 font-sans leading-relaxed">
-            From initial inspiration to final confirmation, our three-step process makes coordinating your wedding team effortless.
+          <p className="text-sm sm:text-base text-[#efe9de]/75 font-sans leading-relaxed">
+            From initial discovery to confirmed dates, coordinate your wedding team in one ledger.
           </p>
         </div>
 
-        {/* 3 Numbered Steps Grid with 8px rhythm (gap-6) */}
+        {/* 3 Numbered Steps Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {STEPS.map((s) => {
             const Icon = s.icon;
             return (
               <div
                 key={s.step}
-                className="relative flex flex-col justify-between p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 space-y-6"
+                className="relative flex flex-col justify-between p-6 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors space-y-6"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center justify-center size-11 rounded-xl bg-white/10 text-rose-300 border border-white/10">
-                    <Icon className="size-5" />
+                  <div className="flex items-center justify-center size-10 rounded-lg bg-white/10 text-rose-300 border border-white/10">
+                    <Icon className="size-4" strokeWidth={1.5} />
                   </div>
-                  <span className="font-serif text-3xl font-bold text-white/30 tracking-tight">
+                  <span className="font-serif text-2xl font-medium text-white/30 tabular-nums">
                     {s.step}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-serif text-xl font-semibold text-white tracking-tight">
+                  <h3 className="font-serif text-xl font-medium text-pure-alabaster tracking-tight">
                     {s.title}
                   </h3>
-                  <p className="font-sans text-sm text-zinc-300/80 leading-relaxed">
+                  <p className="font-sans text-sm text-[#efe9de]/75 leading-relaxed">
                     {s.description}
                   </p>
                 </div>
@@ -79,18 +79,18 @@ export function HowItWorks() {
 
         {/* Bottom CTA Banner */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <p className="font-serif text-lg text-white font-medium">
-            Ready to plan with quiet confidence?
+          <p className="font-serif text-lg text-pure-alabaster font-medium">
+            Start comparing venues and artisans for your date
           </p>
           <Link
             href="/services"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-5 text-sm font-medium transition-colors shadow-xs"
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 px-5 text-sm font-medium transition-colors"
             )}
           >
-            <span>Browse All Wedding Services</span>
-            <ArrowRight className="size-4 ml-1.5" />
+            <span>Browse all services</span>
+            <ArrowRight className="size-4 ml-1.5" strokeWidth={1.5} />
           </Link>
         </div>
       </MotionSection>

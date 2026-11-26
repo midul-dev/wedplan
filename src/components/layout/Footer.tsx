@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { SERVICE_CATEGORIES } from "@/types/wedding";
 
@@ -8,29 +8,25 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-soft-pearl border-t border-zinc-200 text-deep-ink">
+    <footer className="w-full bg-soft-pearl border-t border-border text-deep-ink">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* 4 Responsive Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           {/* Column 1: Brand & Editorial Statement (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <Logo size="md" />
-            <p className="font-sans text-sm text-zinc-600 leading-relaxed max-w-sm">
-              WedPlan is an editorial wedding planning directory connecting discerning couples with
-              handpicked venues, documentary cinematographers, floral artists, and couture ateliers.
+            <p className="font-sans text-sm text-muted-foreground leading-relaxed max-w-sm">
+              WedPlan is a wedding planning directory connecting couples with
+              vetted venues, documentary photographers, florists, and couture ateliers.
             </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-zinc-200/90 text-zinc-700 text-xs font-medium">
-              <Sparkles className="size-3 text-rosewood" />
-              <span>Quiet Luxury & Verified Artistry</span>
-            </div>
           </div>
 
           {/* Column 2: Navigation Links (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
-            <p className="text-xs uppercase tracking-wider font-semibold text-deep-ink">
+            <p className="text-xs font-medium text-deep-ink">
               Navigation
             </p>
-            <ul className="space-y-2 text-sm text-zinc-600">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/" className="hover:text-rosewood transition-colors">
                   Home
@@ -43,12 +39,12 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/sign-in" className="hover:text-rosewood transition-colors">
-                  Sign In
+                  Sign in
                 </Link>
               </li>
               <li>
                 <Link href="/sign-up" className="hover:text-rosewood transition-colors">
-                  Create Account
+                  Create account
                 </Link>
               </li>
             </ul>
@@ -56,10 +52,10 @@ export function Footer() {
 
           {/* Column 3: Category Quick Links (3 cols) */}
           <div className="lg:col-span-3 space-y-3">
-            <p className="text-xs uppercase tracking-wider font-semibold text-deep-ink">
-              Wedding Categories
+            <p className="text-xs font-medium text-deep-ink">
+              Wedding categories
             </p>
-            <ul className="space-y-2 text-sm text-zinc-600">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               {SERVICE_CATEGORIES.map((cat) => (
                 <li key={cat}>
                   <Link
@@ -75,20 +71,20 @@ export function Footer() {
 
           {/* Column 4: Contact Information & Socials (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
-            <p className="text-xs uppercase tracking-wider font-semibold text-deep-ink">
-              Concierge Desk
+            <p className="text-xs font-medium text-deep-ink">
+              Concierge desk
             </p>
-            <div className="space-y-2 text-sm text-zinc-600">
+            <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Mail className="size-4 text-zinc-400 shrink-0" />
+                <Mail className="size-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
                 <span className="truncate">concierge@wedplan.com</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="size-4 text-zinc-400 shrink-0" />
-                <span>+1 (800) 555-WEDP</span>
+                <Phone className="size-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+                <span className="tabular-nums">+1 (800) 555-0194</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="size-4 text-zinc-400 shrink-0" />
+                <MapPin className="size-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
                 <span>Napa Valley & New York</span>
               </div>
             </div>

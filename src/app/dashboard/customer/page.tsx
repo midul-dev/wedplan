@@ -34,18 +34,17 @@ export default async function CustomerOverviewPage() {
 
   return (
     <div className="space-y-8">
-      {/* Editorial Dashboard Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200">
+      {/* Dashboard Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-wider font-semibold text-rosewood">
-            Customer Dashboard
+          <p className="text-xs font-medium text-rosewood">
+            Customer overview
           </p>
-          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-deep-ink tracking-tight">
-            Welcome back, {userName}
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium text-deep-ink tracking-tight">
+            {userName}&apos;s planning ledger
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-600 font-sans">
-            Review your celebration milestones, vendor responses, and active
-            date requests.
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans">
+            Track celebration milestones, vendor responses, and active date requests.
           </p>
         </div>
 
@@ -54,11 +53,11 @@ export default async function CustomerOverviewPage() {
             href="/services"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-4 text-xs sm:text-sm font-medium shadow-xs",
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium"
             )}
           >
-            <Search className="size-3.5 mr-1.5" />
-            Find More Services
+            <Search className="size-4 mr-1.5" strokeWidth={1.5} />
+            Find services
           </Link>
         </div>
       </div>

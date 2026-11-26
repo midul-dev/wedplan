@@ -10,7 +10,6 @@ import {
   Search,
   ArrowLeft,
   LogOut,
-  Sparkles,
   Store,
   PlusCircle,
   CreditCard,
@@ -131,7 +130,7 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "w-60 shrink-0 bg-soft-pearl border-r border-zinc-200 min-h-screen flex flex-col justify-between p-4 font-sans select-none",
+        "w-64 shrink-0 bg-soft-pearl border-r border-border min-h-screen flex flex-col justify-between p-4 font-sans select-none",
         className
       )}
     >
@@ -142,38 +141,37 @@ export function DashboardSidebar({
         </div>
 
         {/* User Identity Header */}
-        <div className="p-3 bg-pure-alabaster border border-zinc-200 rounded-xl space-y-2.5">
+        <div className="p-3 bg-pure-alabaster border border-border rounded-xl space-y-2.5">
           {effectiveUser ? (
             <>
               <div className="flex items-center gap-3">
-                <Avatar className="size-10 border border-zinc-200">
+                <Avatar className="size-9 border border-border">
                   {(effectiveUser.avatar || effectiveUser.image) && (
                     <AvatarImage
                       src={(effectiveUser.avatar || effectiveUser.image) as string}
                       alt={effectiveUser.name}
                     />
                   )}
-                  <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-serif font-bold">
+                  <AvatarFallback className="bg-rose-50 text-rosewood text-xs font-serif font-medium">
                     {getInitials(effectiveUser.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-deep-ink font-serif truncate">
+                  <p className="text-sm font-medium text-deep-ink font-serif truncate">
                     {effectiveUser.name}
                   </p>
-                  <p className="text-[11px] text-zinc-500 truncate">{effectiveUser.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">{effectiveUser.email}</p>
                 </div>
               </div>
 
-              <div className="pt-1 flex items-center justify-between border-t border-zinc-100">
+              <div className="pt-2 flex items-center justify-between border-t border-border">
                 <StatusBadge
                   status={effectiveUser.role}
                   showDot={false}
-                  className="text-[10px] py-0 px-2 uppercase font-semibold"
+                  className="text-[11px] py-0 px-2 font-medium capitalize"
                 />
                 {effectiveUser.vendorTier === "premium" && (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-champagne-amber font-semibold">
-                    <Sparkles className="size-2.5" />
+                  <span className="text-[11px] text-champagne-amber font-medium">
                     Premium
                   </span>
                 )}
@@ -182,13 +180,13 @@ export function DashboardSidebar({
           ) : (
             <div className="space-y-2.5">
               <div className="flex items-center gap-3">
-                <Skeleton className="size-10 rounded-full" />
+                <Skeleton className="size-9 rounded-full" />
                 <div className="space-y-1.5 flex-1">
                   <Skeleton className="h-3.5 w-24" />
                   <Skeleton className="h-2.5 w-32" />
                 </div>
               </div>
-              <div className="pt-1 border-t border-zinc-100 flex justify-between">
+              <div className="pt-1 border-t border-border flex justify-between">
                 <Skeleton className="h-3 w-16" />
               </div>
             </div>
@@ -196,11 +194,11 @@ export function DashboardSidebar({
         </div>
 
         {/* Primary Role-Based Nav Links */}
-        <div className="space-y-1">
-          <p className="px-3 text-[11px] uppercase tracking-wider font-semibold text-zinc-400">
+        <div className="space-y-2">
+          <p className="px-2.5 text-xs font-medium text-muted-foreground">
             {navConfig.title}
           </p>
-          <nav className="space-y-1 pt-1">
+          <nav className="space-y-0.5">
             {navConfig.items.map((item) => {
               const Icon = item.icon;
               const isActive = item.exact
@@ -213,16 +211,17 @@ export function DashboardSidebar({
                   href={item.href}
                   onClick={onCloseMobile}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-colors",
+                    "flex items-center gap-2.5 px-2.5 h-9 rounded-lg text-[13px] transition-colors",
                     isActive
-                      ? "bg-rose-50/80 text-rosewood font-semibold border border-rose-200/80"
-                      : "text-zinc-600 hover:text-deep-ink hover:bg-zinc-200/50"
+                      ? "bg-pure-alabaster text-deep-ink font-medium border border-border"
+                      : "text-muted-foreground hover:text-deep-ink hover:bg-accent/60"
                   )}
                 >
                   <Icon
+                    strokeWidth={1.5}
                     className={cn(
                       "size-4 shrink-0",
-                      isActive ? "text-rosewood" : "text-zinc-400"
+                      isActive ? "text-rosewood" : "text-muted-foreground"
                     )}
                   />
                   <span>{item.label}</span>
@@ -233,25 +232,25 @@ export function DashboardSidebar({
         </div>
 
         {/* Public Shortcuts */}
-        <div className="space-y-1 pt-2 border-t border-zinc-200">
-          <p className="px-3 text-[11px] uppercase tracking-wider font-semibold text-zinc-400">
-            Public Platform
+        <div className="space-y-2 pt-3 border-t border-border">
+          <p className="px-2.5 text-xs font-medium text-muted-foreground">
+            Public directory
           </p>
-          <nav className="space-y-1 pt-1">
+          <nav className="space-y-0.5">
             <Link
               href="/services"
               onClick={onCloseMobile}
-              className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-600 hover:text-deep-ink hover:bg-zinc-200/50 rounded-xl transition-colors"
+              className="flex items-center gap-2.5 px-2.5 h-9 text-[13px] text-muted-foreground hover:text-deep-ink hover:bg-accent/60 rounded-lg transition-colors"
             >
-              <Search className="size-4 shrink-0 text-zinc-400" />
+              <Search className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
               <span>Browse Services</span>
             </Link>
             <Link
               href="/"
               onClick={onCloseMobile}
-              className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-600 hover:text-deep-ink hover:bg-zinc-200/50 rounded-xl transition-colors"
+              className="flex items-center gap-2.5 px-2.5 h-9 text-[13px] text-muted-foreground hover:text-deep-ink hover:bg-accent/60 rounded-lg transition-colors"
             >
-              <ArrowLeft className="size-4 shrink-0 text-zinc-400" />
+              <ArrowLeft className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
               <span>Back to Home</span>
             </Link>
           </nav>
@@ -259,19 +258,19 @@ export function DashboardSidebar({
       </div>
 
       {/* Bottom Sign Out Action */}
-      <div className="pt-4 border-t border-zinc-200">
+      <div className="pt-4 border-t border-border">
         <button
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center gap-2.5 px-2.5 h-9 text-[13px] font-medium text-rose-700 hover:bg-rose-50/70 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSigningOut ? (
-            <Loader2 className="size-4 animate-spin text-rose-700 shrink-0" />
+            <Loader2 className="size-4 animate-spin text-rose-700 shrink-0" strokeWidth={1.5} />
           ) : (
-            <LogOut className="size-4 shrink-0" />
+            <LogOut className="size-4 shrink-0" strokeWidth={1.5} />
           )}
-          <span>{isSigningOut ? "Signing Out..." : "Sign Out"}</span>
+          <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
         </button>
       </div>
     </aside>

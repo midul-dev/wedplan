@@ -35,7 +35,7 @@ export function DashboardShell({
       {/* Mobile Drawer & Main Content Column */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Top Header (lg:hidden) */}
-        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 h-16 bg-white border-b border-zinc-200">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 h-16 bg-pure-alabaster border-b border-border">
           <Logo size="sm" />
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

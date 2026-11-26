@@ -22,23 +22,23 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-wider font-semibold text-rosewood">
-            Platform Administration
+          <p className="text-xs font-medium text-rosewood">
+            Platform administration
           </p>
-          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-deep-ink tracking-tight">
-            Director Overview — {adminUser.name}
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium text-deep-ink tracking-tight">
+            Director overview — {adminUser.name}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-600 font-sans">
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans">
             Monitor platform metrics, curate pending artisan listings, and manage system users.
           </p>
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-botanical-sage border border-emerald-200 text-xs font-semibold">
-            <span className="size-2 rounded-full bg-botanical-sage animate-pulse" />
-            System Status: Healthy
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-botanical-sage border border-emerald-200/80 text-xs font-medium">
+            <span className="size-1.5 rounded-full bg-botanical-sage" />
+            System status: Healthy
           </span>
         </div>
       </div>

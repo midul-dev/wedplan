@@ -51,45 +51,45 @@
 }
 
 :root {
-  /* WedPlan Editorial Wedding Design Tokens */
-  --pure-alabaster: #ffffff;
-  --soft-pearl: #f7f6f3;
-  --deep-ink: #18181b;
+  /* WedPlan Warm Paper & Ink Design Tokens */
+  --pure-alabaster: #fdfbf7;
+  --soft-pearl: #f7f4ee;
+  --deep-ink: #1f1b16;
   --rosewood: #881337;
   --rosewood-hover: #6f102d;
-  --botanical-sage: #15803d;
+  --botanical-sage: #16a34a;
   --champagne-amber: #b45309;
 
   /* Semantic UI Tokens */
-  --background: #ffffff;
-  --foreground: #18181b;
-  --card: #ffffff;
-  --card-foreground: #18181b;
-  --popover: #ffffff;
-  --popover-foreground: #18181b;
+  --background: #fdfbf7;
+  --foreground: #1f1b16;
+  --card: #fdfbf7;
+  --card-foreground: #1f1b16;
+  --popover: #fdfbf7;
+  --popover-foreground: #1f1b16;
   --primary: #881337;
-  --primary-foreground: #ffffff;
-  --secondary: #f7f6f3;
-  --secondary-foreground: #18181b;
-  --muted: #f7f6f3;
-  --muted-foreground: #52525b;
-  --accent: #f7f6f3;
-  --accent-foreground: #18181b;
-  --destructive: #be123c;
-  --destructive-foreground: #ffffff;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
+  --primary-foreground: #fdfbf7;
+  --secondary: #f7f4ee;
+  --secondary-foreground: #1f1b16;
+  --muted: #f7f4ee;
+  --muted-foreground: #5e554a;
+  --accent: #efe9df;
+  --accent-foreground: #1f1b16;
+  --destructive: #dc2626;
+  --destructive-foreground: #fdfbf7;
+  --border: rgba(31, 27, 22, 0.09);
+  --input: rgba(31, 27, 22, 0.12);
   --ring: #881337;
   --radius: 0.5rem;
 
   /* Dashboard Sidebar */
-  --sidebar: #f7f6f3;
-  --sidebar-foreground: #18181b;
+  --sidebar: #f7f4ee;
+  --sidebar-foreground: #1f1b16;
   --sidebar-primary: #881337;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edebe7;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
+  --sidebar-primary-foreground: #fdfbf7;
+  --sidebar-accent: #efe9df;
+  --sidebar-accent-foreground: #1f1b16;
+  --sidebar-border: rgba(31, 27, 22, 0.09);
   --sidebar-ring: #881337;
 }
 

@@ -17,24 +17,24 @@ export function Logo({
 }: LogoProps) {
   const sizeStyles = {
     sm: {
+      box: "size-7 text-sm rounded-md",
+      text: "text-base",
+    },
+    md: {
       box: "size-8 text-base rounded-lg",
       text: "text-lg",
     },
-    md: {
-      box: "size-10 text-xl rounded-xl",
-      text: "text-2xl",
-    },
     lg: {
-      box: "size-12 text-2xl rounded-2xl",
-      text: "text-3xl",
+      box: "size-10 text-xl rounded-lg",
+      text: "text-2xl",
     },
   }[size];
 
   const content = (
-    <div className={cn("inline-flex items-center gap-2.5 group select-none", className)}>
+    <div className={cn("inline-flex items-center gap-2.5 select-none", className)}>
       <div
         className={cn(
-          "flex items-center justify-center bg-rosewood text-white font-serif font-bold shadow-xs transition-transform duration-200 group-hover:scale-105",
+          "flex items-center justify-center bg-rosewood text-pure-alabaster font-serif font-medium",
           sizeStyles.box
         )}
         aria-hidden="true"
@@ -44,7 +44,7 @@ export function Logo({
       {withWordmark && (
         <span
           className={cn(
-            "font-serif font-bold tracking-tight text-deep-ink leading-none",
+            "font-serif font-semibold tracking-tight text-deep-ink leading-none",
             sizeStyles.text
           )}
         >

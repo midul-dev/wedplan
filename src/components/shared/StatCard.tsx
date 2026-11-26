@@ -19,29 +19,23 @@ export function StatCard({
   value,
   description,
   trend,
-  icon: Icon,
   className,
 }: StatCardProps) {
   return (
     <div
       className={cn(
-        "flex flex-col justify-between p-6 bg-pure-alabaster border border-zinc-200 rounded-2xl shadow-xs transition-shadow hover:shadow-sm",
+        "flex flex-col justify-between p-5 bg-pure-alabaster border border-border rounded-xl transition-colors",
         className
       )}
     >
-      <div className="flex items-start justify-between gap-4">
-        <span className="font-sans text-xs uppercase tracking-wider font-semibold text-zinc-500">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-sans text-xs font-medium text-muted-foreground">
           {label}
         </span>
-        {Icon && (
-          <div className="flex items-center justify-center size-9 rounded-xl bg-soft-pearl text-rosewood border border-zinc-200/70">
-            <Icon className="size-4" />
-          </div>
-        )}
       </div>
 
-      <div className="mt-4 space-y-2">
-        <div className="font-serif text-3xl font-semibold tracking-tight text-deep-ink">
+      <div className="mt-3 space-y-1.5">
+        <div className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-deep-ink tabular-nums">
           {value}
         </div>
 
@@ -50,17 +44,22 @@ export function StatCard({
             {trend && (
               <span
                 className={cn(
-                  "font-medium px-2 py-0.5 rounded-full border",
+                  "font-medium tabular-nums",
                   trend.isPositive !== false
-                    ? "bg-emerald-50 text-botanical-sage border-emerald-200/80"
-                    : "bg-rose-50 text-rose-800 border-rose-200/80"
+                    ? "text-botanical-sage"
+                    : "text-rose-800"
                 )}
               >
                 {trend.value}
               </span>
             )}
+            {trend && description && (
+              <span className="text-muted-foreground/50" aria-hidden="true">
+                ·
+              </span>
+            )}
             {description && (
-              <span className="text-zinc-500 font-sans truncate">
+              <span className="text-muted-foreground font-sans truncate">
                 {description}
               </span>
             )}

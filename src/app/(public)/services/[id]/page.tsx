@@ -8,7 +8,6 @@ import {
   Check,
   ChevronRight,
   ShieldCheck,
-  Sparkles,
   Clock,
 } from "lucide-react";
 import { ServiceGallery } from "@/components/services/ServiceGallery";
@@ -193,16 +192,16 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
               </div>
 
               {/* Price Row */}
-              <div className="p-4 rounded-xl bg-soft-pearl/70 border border-zinc-200/80 flex items-baseline justify-between">
-                <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <div className="p-4 rounded-xl bg-soft-pearl border border-border flex items-baseline justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
                   Pricing
                 </span>
-                <div className="text-right">
-                  <span className="font-serif text-2xl font-bold text-rosewood">
+                <div className="text-right tabular-nums">
+                  <span className="font-serif text-2xl font-medium text-rosewood">
                     {formattedPrice}
                   </span>
                   {service.priceUnit && (
-                    <span className="text-xs text-zinc-500 font-sans ml-1">
+                    <span className="text-xs text-muted-foreground font-sans ml-1">
                       /{service.priceUnit}
                     </span>
                   )}

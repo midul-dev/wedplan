@@ -15,19 +15,19 @@ export function FeaturedServices() {
   return (
     <MotionSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <SectionHeader
-        eyebrow="Curated Portfolio"
-        title="Featured Wedding Services"
-        subtitle="Explore top-tier venues, award-winning cinematographers, and bespoke artisans vetted for exceptional quality."
+        eyebrow="Portfolio"
+        title="Featured wedding services"
+        subtitle="Venues, documentary photographers, and bespoke ateliers vetted for your celebration."
         action={
           <Link
             href="/services"
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "rounded-xl h-10 px-4 text-sm font-medium text-deep-ink border-zinc-300 hover:bg-soft-pearl"
+              "rounded-lg h-10 px-4 text-sm font-medium text-deep-ink border-border hover:bg-soft-pearl"
             )}
           >
-            <span>Explore All Services</span>
-            <ArrowRight className="size-4 ml-1.5" />
+            <span>Explore all services</span>
+            <ArrowRight className="size-4 ml-1.5" strokeWidth={1.5} />
           </Link>
         }
       />

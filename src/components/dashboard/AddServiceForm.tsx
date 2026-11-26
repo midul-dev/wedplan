@@ -59,17 +59,48 @@ export function AddServiceForm({
   isFreeLimitReached = false,
   currentActiveCount = 2,
 }: AddServiceFormProps) {
-  const [imageUrl, setImageUrl] = useState()
+  const [imageUrl, setImageUrl] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageUrl(file)
-      setPreviewImage(URL.createObjectURL(file));
-    }
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if(!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+            toast.error("File too large", {
+              description: "Please upload an image smaller than 5MB.",
+            });
+            return;
+      
   };
+const formData = new FormData();
+    formData.append("image", file);
+
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setImageUrl(data.data.display_url); 
+        setPreviewImage(data.data.display_url)
+        toast.success("Image uploaded!", { id: toastId });
+      } else {
+        throw new Error(data.error?.message || "Upload failed");
+      }
+    } catch (error) {
+      toast.error("Upload failed", {
+        id: toastId,
+        description: "Something went wrong while uploading.",
+      });
+    }
+}
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

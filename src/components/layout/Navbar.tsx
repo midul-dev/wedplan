@@ -48,8 +48,8 @@ export function Navbar({ mockUser = false }: NavbarProps) {
     const user = session?.user
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-zinc-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 w-full bg-pure-alabaster/95 backdrop-blur-md border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-6">
           <Logo size="md" />
@@ -64,8 +64,8 @@ export function Navbar({ mockUser = false }: NavbarProps) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-rosewood",
-                  isActive ? "text-deep-ink font-semibold" : "text-zinc-600"
+                  "text-sm transition-colors hover:text-deep-ink",
+                  isActive ? "text-deep-ink font-medium" : "text-muted-foreground"
                 )}
               >
                 {link.label}
@@ -75,10 +75,10 @@ export function Navbar({ mockUser = false }: NavbarProps) {
         </nav>
 
         {/* Right: Actions (Loading Skeleton OR Profile Dropdown OR Guest Buttons) */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {isPending ? (
             <div className="flex items-center gap-2.5 p-1">
-              <Skeleton className="size-9 rounded-full" />
+              <Skeleton className="size-8 rounded-full" />
               <div className="hidden sm:flex flex-col gap-1.5 text-left">
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-2.5 w-12" />
@@ -89,24 +89,21 @@ export function Navbar({ mockUser = false }: NavbarProps) {
               user={user}
             />
           ) : (
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-4">
               <Link
                 href="/sign-in"
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "text-deep-ink hover:text-rosewood hover:bg-zinc-100 rounded-xl font-medium text-xs sm:text-sm"
-                )}
+                className="text-sm font-medium text-muted-foreground hover:text-deep-ink transition-colors"
               >
-                Sign In
+                Sign in
               </Link>
               <Link
                 href="/sign-up"
                 className={cn(
                   buttonVariants({ variant: "default", size: "sm" }),
-                  "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl font-medium text-xs sm:text-sm shadow-xs transition-colors"
+                  "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium transition-colors"
                 )}
               >
-                Sign Up
+                Get started
               </Link>
             </div>
           )}

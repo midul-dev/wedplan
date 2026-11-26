@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, User, LogOut, ChevronDown, Sparkles } from "lucide-react";
+import { LayoutDashboard, User, LogOut, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,11 +110,10 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
             <StatusBadge
               status={user.role}
               showDot={false}
-              className="text-[10px] py-0 px-2 uppercase font-semibold"
+              className="text-[11px] py-0 px-2 font-medium capitalize"
             />
             {user.vendorTier === "premium" && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-amber-50 text-champagne-amber border border-amber-200/80">
-                <Sparkles className="size-2.5" />
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-champagne-amber border border-amber-200/80">
                 Premium
               </span>
             )}

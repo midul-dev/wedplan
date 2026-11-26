@@ -28,17 +28,17 @@ export function SectionHeader({
         className
       )}
     >
-      <div className={cn("space-y-1.5", isCentered && "mx-auto max-w-2xl")}>
+      <div className={cn("space-y-2", isCentered && "mx-auto max-w-2xl")}>
         {eyebrow && (
-          <p className="text-xs uppercase tracking-widest font-semibold text-rosewood">
+          <p className="text-xs font-medium text-rosewood">
             {eyebrow}
           </p>
         )}
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-deep-ink">
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-deep-ink">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-sm sm:text-base text-zinc-600 font-sans max-w-2xl leading-relaxed">
+          <p className="text-sm sm:text-base text-muted-foreground font-sans max-w-2xl leading-relaxed">
             {subtitle}
           </p>
         )}

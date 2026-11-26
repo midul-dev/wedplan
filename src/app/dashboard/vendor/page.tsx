@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Store, CalendarCheck2, Clock, DollarSign, Sparkles, Plus } from "lucide-react";
+import { Store, CalendarCheck2, Clock, DollarSign, Plus } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { VendorBookingRequestsTable } from "@/components/dashboard/VendorBookingRequestsTable";
 import { buttonVariants } from "@/components/ui/button";
@@ -30,15 +30,15 @@ export default async function VendorOverviewPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-wider font-semibold text-rosewood">
-            Vendor Studio Studio
+          <p className="text-xs font-medium text-rosewood">
+            Vendor studio
           </p>
-          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-deep-ink tracking-tight">
-            Welcome, {vendorUser.businessName || vendorUser.name}
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium text-deep-ink tracking-tight">
+            {vendorUser.businessName || vendorUser.name}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-600 font-sans">
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans">
             Manage your service portfolio, review incoming date requests, and track inquiry conversions.
           </p>
         </div>
@@ -48,11 +48,11 @@ export default async function VendorOverviewPage() {
             href="/dashboard/vendor/add-service"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-4 text-xs sm:text-sm font-medium shadow-xs"
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium"
             )}
           >
-            <Plus className="size-3.5 mr-1.5" />
-            Add Service
+            <Plus className="size-4 mr-1.5" strokeWidth={1.5} />
+            Add service
           </Link>
         </div>
       </div>
@@ -90,7 +90,6 @@ export default async function VendorOverviewPage() {
           label="Studio Tier"
           value={vendorUser.vendorTier === "premium" ? "Premium" : "Free Plan"}
           description="3 of 3 slots used"
-          icon={Sparkles}
         />
       </div>
 

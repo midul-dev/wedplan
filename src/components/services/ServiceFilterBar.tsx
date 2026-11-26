@@ -42,17 +42,17 @@ export function ServiceFilterBar({
     filters.sortBy !== "featured";
 
   return (
-    <div className="w-full bg-pure-alabaster border border-zinc-200 rounded-2xl p-4 shadow-xs">
+    <div className="w-full bg-pure-alabaster border border-border rounded-xl p-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
         {/* 1. Search by Service/Vendor Name (4 cols) */}
         <div className="lg:col-span-4 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" strokeWidth={1.5} />
           <Input
             type="text"
-            placeholder="Search service, venue, or vendor..."
+            placeholder="Search service, venue, or vendor"
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
-            className="pl-9 h-10 rounded-xl bg-white border-zinc-200 text-sm placeholder:text-zinc-400 focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+            className="pl-9 h-10 rounded-lg bg-pure-alabaster border-border text-sm placeholder:text-muted-foreground/70 focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
           />
         </div>
 

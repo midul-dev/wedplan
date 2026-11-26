@@ -95,18 +95,18 @@ function BrowseServicesView() {
 
   return (
     <div className="w-full min-h-screen bg-pure-alabaster flex flex-col">
-      {/* 1. Header Band on Soft Pearl #F7F6F3 */}
-      <div className="w-full bg-soft-pearl border-b border-zinc-200/80 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-          <p className="text-xs uppercase tracking-widest font-semibold text-rosewood">
-            The Wedding Directory
+      {/* 1. Header Band */}
+      <div className="w-full bg-soft-pearl border-b border-border py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
+          <p className="text-xs font-medium text-rosewood">
+            Wedding directory
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-deep-ink">
-            Browse Wedding Services
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-deep-ink">
+            Browse wedding services
           </h1>
-          <p className="text-sm sm:text-base text-zinc-600 font-sans max-w-2xl leading-relaxed">
-            Discover verified private estates, documentary cinematographers, floral artists,
-            and couture ateliers dedicated to your celebration.
+          <p className="text-sm sm:text-base text-muted-foreground font-sans max-w-2xl leading-relaxed">
+            Compare private estates, documentary photographers, florists, and
+            couture ateliers for your celebration.
           </p>
         </div>
       </div>

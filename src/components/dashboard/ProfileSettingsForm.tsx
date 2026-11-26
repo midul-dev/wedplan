@@ -82,20 +82,41 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("File too large", {
-          description: "Please upload an image smaller than 2MB.",
-        });
-        return;
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File too large", {
+        description: "Please upload an image smaller than 2MB.",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setAvatarUrl(data.data.display_url); // লাইভ ইমেজ লিংক স্টেটে সেট হবে
+        toast.success("Image uploaded!", { id: toastId });
+      } else {
+        throw new Error(data.error?.message || "Upload failed");
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error("Upload failed", {
+        id: toastId,
+        description: "Something went wrong while uploading.",
+      });
     }
   };
 
@@ -119,7 +140,9 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         {/* Profile Avatar Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-4 rounded-xl bg-soft-pearl/70 border border-zinc-200/80">
           <Avatar className="size-18 border-2 border-white shadow-xs">
-            {avatarUrl && <AvatarImage src={avatarUrl} alt={user?.name || ""} />}
+            {avatarUrl && (
+              <AvatarImage src={avatarUrl} alt={user?.name || ""} />
+            )}
             <AvatarFallback className="bg-rose-50 text-rosewood text-lg font-serif font-bold">
               {getInitials(user?.name || "")}
             </AvatarFallback>

@@ -5,7 +5,7 @@ import {
   Building2,
   Flower2,
   UtensilsCrossed,
-  Sparkles,
+  Palette,
   Shirt,
   ArrowRight,
 } from "lucide-react";
@@ -47,8 +47,8 @@ const CATEGORIES_DATA: CategoryMeta[] = [
   },
   {
     title: "Makeup & Styling",
-    tagline: "Luminous bridal hair & photographic artistry",
-    icon: Sparkles,
+    tagline: "Bridal hair and photographic makeup",
+    icon: Palette,
     count: "36 Stylists",
   },
   {
@@ -61,15 +61,15 @@ const CATEGORIES_DATA: CategoryMeta[] = [
 
 export function CategoryGrid() {
   return (
-    <div className="w-full bg-soft-pearl border-y border-zinc-200/80">
+    <div className="w-full bg-soft-pearl border-y border-border">
       <MotionSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <SectionHeader
-          eyebrow="Curated Disciplines"
-          title="Explore Wedding Categories"
-          subtitle="Every dimension of your ceremony and reception, curated with meticulous attention to craft."
+          eyebrow="Disciplines"
+          title="Explore wedding categories"
+          subtitle="Browse every vendor discipline for your ceremony and reception."
         />
 
-        {/* 6 Categories Grid with 8px rhythm (gap-6) */}
+        {/* 6 Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {CATEGORIES_DATA.map((cat) => {
             const Icon = cat.icon;
@@ -77,31 +77,31 @@ export function CategoryGrid() {
               <Link
                 key={cat.title}
                 href={`/services?category=${encodeURIComponent(cat.title)}`}
-                className="group flex flex-col justify-between p-6 bg-pure-alabaster border border-zinc-200 rounded-2xl transition-all duration-300 hover:shadow-md hover:border-zinc-300 hover:-translate-y-0.5"
+                className="group flex flex-col justify-between p-5 bg-pure-alabaster border border-border rounded-xl transition-colors hover:border-deep-ink/20"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center justify-center size-12 rounded-xl bg-soft-pearl text-rosewood border border-zinc-200/80 group-hover:bg-rosewood group-hover:text-white transition-colors">
-                      <Icon className="size-5" />
+                    <div className="flex items-center justify-center size-10 rounded-lg bg-soft-pearl text-muted-foreground border border-border group-hover:bg-rosewood group-hover:text-pure-alabaster group-hover:border-rosewood transition-colors">
+                      <Icon className="size-4" strokeWidth={1.5} />
                     </div>
-                    <span className="text-xs font-semibold text-zinc-400 font-sans tracking-wide">
+                    <span className="text-xs font-medium text-muted-foreground tabular-nums">
                       {cat.count}
                     </span>
                   </div>
 
                   <div className="space-y-1.5">
-                    <h3 className="font-serif text-lg font-semibold text-deep-ink group-hover:text-rosewood transition-colors">
+                    <h3 className="font-serif text-lg font-medium text-deep-ink group-hover:text-rosewood transition-colors">
                       {cat.title}
                     </h3>
-                    <p className="font-sans text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                    <p className="font-sans text-sm text-muted-foreground leading-relaxed">
                       {cat.tagline}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-xs font-medium text-rosewood">
-                  <span>Browse Category</span>
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                <div className="pt-4 mt-4 border-t border-border flex items-center justify-between text-xs font-medium text-rosewood">
+                  <span>Browse category</span>
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} />
                 </div>
               </Link>
             );

@@ -33,25 +33,25 @@ export function WhyChooseWedPlan() {
   return (
     <MotionSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <SectionHeader
-        eyebrow="The WedPlan Standard"
-        title="Designed with Restraint & Intent"
-        subtitle="We replace chaotic spreadsheets and predatory vendor directories with a calm, transparent editorial platform."
+        eyebrow="The WedPlan standard"
+        title="Built for calm planning"
+        subtitle="Replace scattered spreadsheets and opaque vendor quotes with one clear directory."
       />
 
-      {/* 4 calm editorial benefit columns separated by subtle top borders */}
+      {/* 4 editorial benefit columns separated by hairline top borders */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {BENEFITS.map((b) => (
           <div
             key={b.number}
-            className="flex flex-col border-t border-zinc-200/90 pt-6 space-y-3"
+            className="flex flex-col border-t border-border pt-6 space-y-3"
           >
-            <span className="font-serif text-sm font-semibold text-rosewood tracking-wider">
+            <span className="font-serif text-sm font-medium text-rosewood tabular-nums">
               {b.number}
             </span>
-            <h3 className="font-serif text-lg font-semibold text-deep-ink tracking-tight">
+            <h3 className="font-serif text-lg font-medium text-deep-ink tracking-tight">
               {b.title}
             </h3>
-            <p className="font-sans text-sm text-zinc-600 leading-relaxed">
+            <p className="font-sans text-sm text-muted-foreground leading-relaxed">
               {b.description}
             </p>
           </div>

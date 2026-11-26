@@ -74,9 +74,9 @@ export function MobileNav({ user, onLogout }: MobileNavProps) {
           </nav>
 
           {/* Wedding Categories Quick Links */}
-          <div className="space-y-2 pt-2 border-t border-zinc-100">
-            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Wedding Categories
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="px-3 text-xs font-medium text-muted-foreground">
+              Wedding categories
             </p>
             <div className="flex flex-col space-y-0.5">
               {SERVICE_CATEGORIES.map((cat) => (
