@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Pencil, Trash2, CheckCircle2, Plus, Sparkles } from "lucide-react";
+import { Pencil, Trash2, CheckCircle2, Plus, Store } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,64 +18,78 @@ import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
-import type { WeddingService } from "@/types/wedding";
+import type { IWeddingService } from "@/types/wedding";
 
 interface VendorServicesTableProps {
-  services: WeddingService[];
+  services: IWeddingService[];
 }
 
-export function VendorServicesTable({ services: initialServices }: VendorServicesTableProps) {
-  const [services, setServices] = useState<WeddingService[]>(initialServices);
+function getServiceImage(service: IWeddingService): string | null {
+  if (service.featuredImage) return service.featuredImage;
+  if (service.image) return service.image;
+  if (Array.isArray(service.images)) return service.images[0] ?? null;
+  if (typeof service.images === "string" && service.images.trim()) {
+    return service.images;
+  }
+  return null;
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(price) || 0);
+}
+
+export function VendorServicesTable({
+  services: initialServices,
+}: VendorServicesTableProps) {
+  const [services, setServices] = useState<IWeddingService[]>(initialServices);
   const [activeStatusMap, setActiveStatusMap] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
-    initialServices.forEach((s) => {
-      map[s.id] = s.status === "approved";
+    initialServices.forEach((service) => {
+      map[service._id] = service.status !== "rejected";
     });
     return map;
   });
-
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+ 
 
   const toggleAvailability = (id: string) => {
-    setActiveStatusMap((prev) => {
-      const nextState = !prev[id];
-      const msg = nextState
-        ? "Service set to Active & Accepting Bookings."
-        : "Service paused from public search.";
-      setFeedbackMessage(msg);
-      toast.success(nextState ? "Service Activated" : "Service Paused", {
-        description: msg,
-      });
-      setTimeout(() => setFeedbackMessage(null), 3000);
-      return { ...prev, [id]: nextState };
+    const nextState = !(activeStatusMap[id] ?? true);
+    setActiveStatusMap((prev) => ({ ...prev, [id]: nextState }));
+
+    const msg = nextState
+      ? "Service set to Active and accepting bookings."
+      : "Service paused from public search.";
+    toast.success(nextState ? "Service activated" : "Service paused", {
+      description: msg,
     });
   };
 
   const handleDelete = (id: string, title: string) => {
-    setServices((prev) => prev.filter((s) => s.id !== id));
-    setFeedbackMessage(`"${title}" has been deleted.`);
-    toast.success("Service Deleted", {
+    setServices((prev) => prev.filter((s) => s._id !== id));
+    toast.success("Service deleted", {
       description: `"${title}" was removed from your catalog.`,
     });
-    setTimeout(() => setFeedbackMessage(null), 3000);
   };
 
   if (services.length === 0) {
     return (
       <EmptyState
-        icon={Sparkles}
-        title="No Services Listed Yet"
+        icon={Store}
+        title="No services listed yet"
         description="Publish your first wedding service package to start receiving date inquiries from couples."
         action={
           <Link
             href="/dashboard/vendor/add-service"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 px-5 text-sm font-medium"
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 px-5 text-sm font-medium"
             )}
           >
-            <Plus className="size-4 mr-1.5" />
-            Add New Service
+            <Plus className="size-4 mr-1.5" strokeWidth={1.5} />
+            Add new service
           </Link>
         }
       />
@@ -84,89 +98,82 @@ export function VendorServicesTable({ services: initialServices }: VendorService
 
   return (
     <div className="space-y-4">
-      {feedbackMessage && (
-        <div className="p-3 bg-emerald-50 text-botanical-sage border border-emerald-200 rounded-xl text-xs flex items-center gap-2">
-          <CheckCircle2 className="size-4 shrink-0" />
-          <span>{feedbackMessage}</span>
-        </div>
-      )}
-
-      <div className="rounded-2xl border border-zinc-200 bg-pure-alabaster overflow-hidden shadow-xs">
+      <div className="rounded-xl border border-border bg-pure-alabaster overflow-hidden">
         <Table>
-          <TableHeader className="bg-soft-pearl/80">
-            <TableRow className="border-b border-zinc-200 hover:bg-transparent">
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5 pl-6">
-                Service & Discipline
+          <TableHeader className="bg-soft-pearl">
+            <TableRow className="border-b border-border hover:bg-transparent">
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5 pl-6">
+                Service
               </TableHead>
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5">
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5">
                 Category
               </TableHead>
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5">
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5">
                 Pricing
               </TableHead>
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5">
-                Approval Status
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5">
+                Approval status
               </TableHead>
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5">
-                Accepting Dates
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5">
+                Accepting dates
               </TableHead>
-              <TableHead className="font-semibold text-deep-ink text-xs uppercase tracking-wider py-3.5 text-right pr-6">
+              <TableHead className="font-medium text-deep-ink text-xs py-3.5 text-right pr-6">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {services.map((service) => {
-              const isAvailable = activeStatusMap[service.id] ?? true;
-              const formattedPrice = new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                maximumFractionDigits: 0,
-              }).format(service.price);
+              const imageSrc = getServiceImage(service);
+              const isAvailable = activeStatusMap[service._id] ?? true;
 
               return (
                 <TableRow
-                  key={service.id}
-                  className="border-b border-zinc-100 hover:bg-soft-pearl/30 transition-colors"
+                  key={service._id}
+                  className="border-b border-border hover:bg-soft-pearl/40 transition-colors"
                 >
                   {/* Service Image + Title */}
                   <TableCell className="py-4 pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 border border-zinc-200">
-                        <Image
-                          src={service.featuredImage || service.images[0]}
-                          alt={service.title}
-                          fill
-                          sizes="60px"
-                          className="object-cover"
-                        />
+                      <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-soft-pearl border border-border flex items-center justify-center">
+                        {imageSrc ? (
+                          <Image
+                            src={imageSrc}
+                            alt={service.title}
+                            fill
+                            sizes="60px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <Store className="size-4 text-muted-foreground" strokeWidth={1.5} />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <Link
-                          href={`/services/${service.id}`}
-                          className="font-serif font-semibold text-sm text-deep-ink hover:text-rosewood transition-colors truncate block max-w-[200px]"
+                          href={`/services/${service._id}`}
+                          className="font-serif font-medium text-sm text-deep-ink hover:text-rosewood transition-colors truncate block max-w-[220px]"
                         >
                           {service.title}
                         </Link>
-                        <span className="text-[11px] text-zinc-500 font-sans truncate block">
+                        <span className="text-xs text-muted-foreground font-sans truncate block">
                           {service.location}
                         </span>
                       </div>
                     </div>
                   </TableCell>
 
-                  {/* Category Pill */}
+                  {/* Category */}
                   <TableCell className="py-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-soft-pearl text-zinc-700 border border-zinc-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-soft-pearl text-deep-ink border border-border">
                       {service.category}
                     </span>
                   </TableCell>
 
                   {/* Price */}
-                  <TableCell className="py-4 text-xs font-semibold text-deep-ink">
-                    {formattedPrice}
+                  <TableCell className="py-4 text-xs font-medium text-deep-ink tabular-nums">
+                    {formatPrice(service.price)}
                     {service.priceUnit && (
-                      <span className="text-[10px] text-zinc-500 font-normal ml-1">
+                      <span className="text-xs text-muted-foreground font-normal ml-1">
                         /{service.priceUnit}
                       </span>
                     )}
@@ -174,7 +181,7 @@ export function VendorServicesTable({ services: initialServices }: VendorService
 
                   {/* Approval Status */}
                   <TableCell className="py-4">
-                    <StatusBadge status={service.status} />
+                    <StatusBadge status={service.status ?? "pending"} />
                   </TableCell>
 
                   {/* Availability Switch */}
@@ -182,10 +189,10 @@ export function VendorServicesTable({ services: initialServices }: VendorService
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={isAvailable}
-                        onCheckedChange={() => toggleAvailability(service.id)}
+                        onCheckedChange={() => toggleAvailability(service._id)}
                         aria-label={`Toggle active availability for ${service.title}`}
                       />
-                      <span className="text-[11px] text-zinc-600 font-sans">
+                      <span className="text-xs text-muted-foreground font-sans">
                         {isAvailable ? "Active" : "Paused"}
                       </span>
                     </div>
@@ -197,19 +204,19 @@ export function VendorServicesTable({ services: initialServices }: VendorService
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="text-zinc-500 hover:text-deep-ink hover:bg-zinc-100 rounded-lg cursor-pointer"
+                        className="text-muted-foreground hover:text-deep-ink hover:bg-soft-pearl rounded-lg cursor-pointer"
                         title="Edit service details"
                       >
-                        <Pencil className="size-3.5" />
+                        <Pencil className="size-3.5" strokeWidth={1.5} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        onClick={() => handleDelete(service.id, service.title)}
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        onClick={() => handleDelete(service._id, service.title)}
+                        className="text-rose-700 hover:text-rose-800 hover:bg-rose-50 rounded-lg cursor-pointer"
                         title="Delete service"
                       >
-                        <Trash2 className="size-3.5" />
+                        <Trash2 className="size-3.5" strokeWidth={1.5} />
                       </Button>
                     </div>
                   </TableCell>

@@ -18,6 +18,7 @@ export type SubscriptionPlan = "free" | "premium_monthly" | "premium_annual";
 
 export interface IUser {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   role: UserRole | string;
@@ -55,29 +56,42 @@ export interface ServicePackage {
 }
 
 export interface WeddingService {
-  id: string;
   title: string;
-  slug: string;
   category: ServiceCategory;
   vendorId: string;
   vendorName: string;
-  vendorTier: VendorTier;
-  vendorAvatar?: string;
+  vendorEmail: string;
   price: number;
   priceUnit: string;
   location: string;
-  images: string[];
-  featuredImage: string;
+  images: string;
   description: string;
-  shortDescription: string;
-  rating: number;
-  reviewCount: number;
   status: ServiceStatus;
   capacity?: string;
-  amenities?: string[];
   packages?: ServicePackage[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IWeddingService {
+  _id: string;
+  title: string;
+  category: ServiceCategory;
+  vendorId: string;
+  vendorName: string;
+  vendorEmail: string;
+  price: number;
+  priceUnit: string;
+  location: string;
+  image?: string;
+  featuredImage?: string;
+  images?: string | string[];
+  description: string;
+  status?: ServiceStatus;
+  capacity?: string;
+  packages?: ServicePackage[];
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface BookingRequest {
