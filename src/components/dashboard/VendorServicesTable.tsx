@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Pencil, Trash2, CheckCircle2, Plus, Store } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Pencil, Trash2, Plus, Store } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,7 +18,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { EditServiceDialog } from "@/components/dashboard/EditServiceDialog";
+import { DeleteServiceDialog } from "@/components/dashboard/DeleteServiceDialog";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/fetcher";
 import type { IWeddingService } from "@/types/wedding";
 
 interface VendorServicesTableProps {
@@ -42,36 +46,21 @@ function formatPrice(price: number): string {
   }).format(Number(price) || 0);
 }
 
-export function VendorServicesTable({
-  services: initialServices,
-}: VendorServicesTableProps) {
-  const [services, setServices] = useState<IWeddingService[]>(initialServices);
-  const [activeStatusMap, setActiveStatusMap] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    initialServices.forEach((service) => {
-      map[service._id] = service.status !== "rejected";
-    });
-    return map;
-  });
- 
+export function VendorServicesTable({ services }: VendorServicesTableProps) {
+  const router = useRouter();
 
-  const toggleAvailability = (id: string) => {
-    const nextState = !(activeStatusMap[id] ?? true);
-    setActiveStatusMap((prev) => ({ ...prev, [id]: nextState }));
+  const handleToggle = async (id: string, nextState: boolean) => {
+    try {
+      await apiFetch(`/service/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive: nextState }),
+      });
 
-    const msg = nextState
-      ? "Service set to Active and accepting bookings."
-      : "Service paused from public search.";
-    toast.success(nextState ? "Service activated" : "Service paused", {
-      description: msg,
-    });
-  };
-
-  const handleDelete = (id: string, title: string) => {
-    setServices((prev) => prev.filter((s) => s._id !== id));
-    toast.success("Service deleted", {
-      description: `"${title}" was removed from your catalog.`,
-    });
+      toast.success(nextState ? "Service activated" : "Service paused");
+      router.refresh();
+    } catch {
+      toast.error("Failed to update status");
+    }
   };
 
   if (services.length === 0) {
@@ -85,7 +74,7 @@ export function VendorServicesTable({
             href="/dashboard/vendor/add-service"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 px-5 text-sm font-medium"
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 px-5 text-sm font-medium",
             )}
           >
             <Plus className="size-4 mr-1.5" strokeWidth={1.5} />
@@ -125,7 +114,7 @@ export function VendorServicesTable({
           <TableBody>
             {services.map((service) => {
               const imageSrc = getServiceImage(service);
-              const isAvailable = activeStatusMap[service._id] ?? true;
+              const isAvailable = Boolean(service.isActive);
 
               return (
                 <TableRow
@@ -145,7 +134,10 @@ export function VendorServicesTable({
                             className="object-cover"
                           />
                         ) : (
-                          <Store className="size-4 text-muted-foreground" strokeWidth={1.5} />
+                          <Store
+                            className="size-4 text-muted-foreground"
+                            strokeWidth={1.5}
+                          />
                         )}
                       </div>
                       <div className="min-w-0">
@@ -189,7 +181,9 @@ export function VendorServicesTable({
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={isAvailable}
-                        onCheckedChange={() => toggleAvailability(service._id)}
+                        onCheckedChange={(checked) =>
+                          handleToggle(service._id, checked)
+                        }
                         aria-label={`Toggle active availability for ${service.title}`}
                       />
                       <span className="text-xs text-muted-foreground font-sans">
@@ -201,23 +195,17 @@ export function VendorServicesTable({
                   {/* Edit / Delete Icon Buttons */}
                   <TableCell className="py-4 text-right pr-6">
                     <div className="flex items-center justify-end gap-1">
-                      <Button
+                      <EditServiceDialog service={service} />
+
+                      {/* <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="text-muted-foreground hover:text-deep-ink hover:bg-soft-pearl rounded-lg cursor-pointer"
-                        title="Edit service details"
-                      >
-                        <Pencil className="size-3.5" strokeWidth={1.5} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => handleDelete(service._id, service.title)}
+                        onClick={() => setDeletingService(service)}
                         className="text-rose-700 hover:text-rose-800 hover:bg-rose-50 rounded-lg cursor-pointer"
                         title="Delete service"
                       >
                         <Trash2 className="size-3.5" strokeWidth={1.5} />
-                      </Button>
+                      </Button> */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -226,6 +214,14 @@ export function VendorServicesTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Separate Edit & Delete Dialog Components */}
+
+      {/* <DeleteServiceDialog
+        service={deletingService}
+        open={Boolean(deletingService)}
+        onOpenChange={(open) => !open && setDeletingService(null)}
+      /> */}
     </div>
   );
 }

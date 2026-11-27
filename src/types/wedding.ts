@@ -92,6 +92,7 @@ export interface IWeddingService {
   packages?: ServicePackage[];
   createdAt: string;
   updatedAt?: string;
+  isActive: boolean;
 }
 
 export interface BookingRequest {
