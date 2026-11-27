@@ -197,15 +197,7 @@ export function VendorServicesTable({ services }: VendorServicesTableProps) {
                     <div className="flex items-center justify-end gap-1">
                       <EditServiceDialog service={service} />
 
-                      {/* <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => setDeletingService(service)}
-                        className="text-rose-700 hover:text-rose-800 hover:bg-rose-50 rounded-lg cursor-pointer"
-                        title="Delete service"
-                      >
-                        <Trash2 className="size-3.5" strokeWidth={1.5} />
-                      </Button> */}
+                      <DeleteServiceDialog service={service} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -214,14 +206,6 @@ export function VendorServicesTable({ services }: VendorServicesTableProps) {
           </TableBody>
         </Table>
       </div>
-
-      {/* Separate Edit & Delete Dialog Components */}
-
-      {/* <DeleteServiceDialog
-        service={deletingService}
-        open={Boolean(deletingService)}
-        onOpenChange={(open) => !open && setDeletingService(null)}
-      /> */}
     </div>
   );
 }
