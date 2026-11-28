@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Check, AlertCircle, Trash2, CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Check, AlertCircle, Trash2, CheckCircle2, Store } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,33 +25,47 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { MOCK_SERVICES } from "@/data/mockData";
-import type { WeddingService, ServiceStatus } from "@/types/wedding";
+import { apiFetch } from "@/lib/fetcher";
+import type { IWeddingService, ServiceStatus } from "@/types/wedding";
 
 interface AdminServicesTableProps {
+  services?: IWeddingService[];
   initialStatusFilter?: string;
   limit?: number;
 }
 
+function getServiceImage(service: IWeddingService): string | null {
+  if (service.featuredImage) return service.featuredImage;
+  if (service.image) return service.image;
+  if (Array.isArray(service.images)) return service.images[0] ?? null;
+  if (typeof service.images === "string" && service.images.trim()) {
+    return service.images;
+  }
+  return null;
+}
+
 export function AdminServicesTable({
+  services: initialServices = [],
   initialStatusFilter = "all",
   limit,
 }: AdminServicesTableProps) {
-  const [services, setServices] = useState<WeddingService[]>(MOCK_SERVICES);
+  const router = useRouter();
+  const [services, setServices] = useState<IWeddingService[]>(initialServices);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const filteredServices = useMemo(() => {
     let result = services.filter((s) => {
+      const status = (s.status ?? "pending").toLowerCase();
       const matchSearch =
         !search.trim() ||
         s.title.toLowerCase().includes(search.toLowerCase()) ||
-        s.vendorName.toLowerCase().includes(search.toLowerCase()) ||
+        (s.vendorName || "").toLowerCase().includes(search.toLowerCase()) ||
         s.category.toLowerCase().includes(search.toLowerCase());
 
       const matchStatus =
-        statusFilter === "all" || s.status.toLowerCase() === statusFilter.toLowerCase();
+        statusFilter === "all" || status === statusFilter.toLowerCase();
 
       return matchSearch && matchStatus;
     });
@@ -62,28 +77,53 @@ export function AdminServicesTable({
     return result;
   }, [services, search, statusFilter, limit]);
 
-  const handleStatusChange = (id: string, newStatus: ServiceStatus, title: string) => {
-    setServices((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
-    );
-    const msg = `Service "${title}" marked as ${newStatus.toUpperCase()}.`;
-    setFeedback(msg);
-    if (newStatus === "approved") {
-      toast.success("Service Approved", { description: msg });
-    } else if (newStatus === "rejected") {
-      toast.warning("Service Rejected", { description: msg });
-    } else {
-      toast.info("Status Updated", { description: msg });
+  const handleStatusChange = async (
+    id: string,
+    newStatus: ServiceStatus,
+    title: string
+  ) => {
+    try {
+      await apiFetch(`/service/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      setServices((prev) =>
+        prev.map((s) => (s._id === id ? { ...s, status: newStatus } : s))
+      );
+      const msg = `Service "${title}" marked as ${newStatus}.`;
+      setFeedback(msg);
+      if (newStatus === "approved") {
+        toast.success("Service approved", { description: msg });
+      } else if (newStatus === "rejected") {
+        toast.warning("Service rejected", { description: msg });
+      } else {
+        toast.info("Status updated", { description: msg });
+      }
+      setTimeout(() => setFeedback(null), 3000);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update status"
+      );
     }
-    setTimeout(() => setFeedback(null), 3000);
   };
 
-  const handleDelete = (id: string, title: string) => {
-    setServices((prev) => prev.filter((s) => s.id !== id));
-    const msg = `Service "${title}" has been deleted from the directory.`;
-    setFeedback(msg);
-    toast.success("Service Deleted", { description: msg });
-    setTimeout(() => setFeedback(null), 3000);
+  const handleDelete = async (id: string, title: string) => {
+    try {
+      await apiFetch(`/service/${id}`, { method: "DELETE" });
+
+      setServices((prev) => prev.filter((s) => s._id !== id));
+      const msg = `Service "${title}" has been deleted from the directory.`;
+      setFeedback(msg);
+      toast.success("Service deleted", { description: msg });
+      setTimeout(() => setFeedback(null), 3000);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete service"
+      );
+    }
   };
 
   return (
@@ -157,32 +197,37 @@ export function AdminServicesTable({
             </TableHeader>
             <TableBody>
               {filteredServices.map((service) => {
+                const imageSrc = getServiceImage(service);
                 const formattedPrice = new Intl.NumberFormat("en-US", {
                   style: "currency",
                   currency: "USD",
                   maximumFractionDigits: 0,
-                }).format(service.price);
+                }).format(Number(service.price) || 0);
 
                 return (
                   <TableRow
-                    key={service.id}
+                    key={service._id}
                     className="border-b border-zinc-100 hover:bg-soft-pearl/30 transition-colors"
                   >
                     {/* Image & Title */}
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 border border-zinc-200">
-                          <Image
-                            src={service.featuredImage || service.images[0]}
-                            alt={service.title}
-                            fill
-                            sizes="60px"
-                            className="object-cover"
-                          />
+                        <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-soft-pearl border border-border flex items-center justify-center">
+                          {imageSrc ? (
+                            <Image
+                              src={imageSrc}
+                              alt={service.title}
+                              fill
+                              sizes="60px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <Store className="size-4 text-muted-foreground" strokeWidth={1.5} />
+                          )}
                         </div>
                         <div className="min-w-0">
                           <Link
-                            href={`/services/${service.id}`}
+                            href={`/services/${service._id}`}
                             className="font-serif font-semibold text-sm text-deep-ink hover:text-rosewood transition-colors truncate block max-w-[200px]"
                           >
                             {service.title}
@@ -206,7 +251,7 @@ export function AdminServicesTable({
 
                     {/* Status Badge */}
                     <TableCell className="py-4">
-                      <StatusBadge status={service.status} />
+                      <StatusBadge status={service.status ?? "pending"} />
                     </TableCell>
 
                     {/* Moderation Action Buttons */}
@@ -215,7 +260,7 @@ export function AdminServicesTable({
                         {/* Approve: Sage Button */}
                         <Button
                           size="sm"
-                          onClick={() => handleStatusChange(service.id, "approved", service.title)}
+                          onClick={() => handleStatusChange(service._id, "approved", service.title)}
                           disabled={service.status === "approved"}
                           className="bg-emerald-700 hover:bg-emerald-800 disabled:bg-zinc-100 disabled:text-zinc-400 text-white rounded-lg h-8 px-2.5 text-xs font-medium cursor-pointer shadow-xs"
                           title="Approve service"
@@ -228,7 +273,7 @@ export function AdminServicesTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleStatusChange(service.id, "rejected", service.title)}
+                          onClick={() => handleStatusChange(service._id, "rejected", service.title)}
                           disabled={service.status === "rejected"}
                           className="border-amber-300 text-amber-800 hover:bg-amber-50 disabled:opacity-40 rounded-lg h-8 px-2.5 text-xs font-medium cursor-pointer"
                           title="Reject service"
@@ -241,7 +286,7 @@ export function AdminServicesTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(service.id, service.title)}
+                          onClick={() => handleDelete(service._id, service.title)}
                           className="border-rose-300 text-rose-700 hover:bg-rose-50 rounded-lg h-8 px-2.5 text-xs font-medium cursor-pointer"
                           title="Delete from database"
                         >
