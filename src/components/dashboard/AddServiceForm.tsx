@@ -147,6 +147,7 @@ export function AddServiceForm({
       vendorId: user?.id,
       vendorEmail: user?.email,
       vendorName: user?.name,
+      vendorImage: user?.image,
     };
 
     try {

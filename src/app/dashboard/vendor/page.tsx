@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { Store, CalendarCheck2, Clock, DollarSign, Plus } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
@@ -9,10 +8,11 @@ import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { IUser } from "@/types/wedding";
+import { ApiResponse, IUser, IWeddingService } from "@/types/wedding";
+import { apiFetch } from "@/lib/fetcher";
 
 export default async function VendorOverviewPage() {
- const session = await auth.api.getSession({
+  const session = await auth.api.getSession({
     headers: await headers(),
   });
 
@@ -20,26 +20,27 @@ export default async function VendorOverviewPage() {
     redirect("/sign-in");
   }
 
-  const vendorUser: IUser = session.user; 
-  const vendorServices = MOCK_SERVICES.filter(
-    (s) => s.vendorId === vendorUser.id || s.vendorTier === "free"
+  const vendorUser: IUser = session.user;
+
+  const res = await apiFetch<ApiResponse<IWeddingService[]>>(
+    `/service?vendorId=${vendorUser.id}`,
+    { cache: "no-store" },
   );
-  const pendingRequests = MOCK_BOOKINGS.filter((b) => b.status === "pending").length;
-  const acceptedRequests = MOCK_BOOKINGS.filter((b) => b.status === "accepted").length;
+  const services: IWeddingService[] = res.data ?? [];
+  const activeService = services.filter((s) => s.isActive === true)
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div className="space-y-1">
-          <p className="text-xs font-medium text-rosewood">
-            Vendor studio
-          </p>
+          <p className="text-xs font-medium text-rosewood">Vendor studio</p>
           <h1 className="font-serif text-2xl sm:text-3xl font-medium text-deep-ink tracking-tight">
             {vendorUser.businessName || vendorUser.name}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-sans">
-            Manage your service portfolio, review incoming date requests, and track inquiry conversions.
+            Manage your service portfolio, review incoming date requests, and
+            track inquiry conversions.
           </p>
         </div>
 
@@ -48,7 +49,7 @@ export default async function VendorOverviewPage() {
             href="/dashboard/vendor/add-service"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium"
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium",
             )}
           >
             <Plus className="size-4 mr-1.5" strokeWidth={1.5} />
@@ -61,33 +62,32 @@ export default async function VendorOverviewPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <StatCard
           label="Total Services"
-          value={vendorServices.length}
+          value={services.length}
+          description="Total listings"
+          icon={Store}
+        />
+        <StatCard
+          label="Active Services"
+          value={activeService.length}
           description="Active listings"
           icon={Store}
         />
         <StatCard
-          label="Confirmed Dates"
-          value={acceptedRequests}
+          label="Accepted Bookings"
+          value="0"
           trend={{ value: "Confirmed", isPositive: true }}
           description="Active client events"
           icon={CalendarCheck2}
         />
         <StatCard
-          label="Pending Requests"
-          value={pendingRequests}
+          label="Pending Booking Requests"
+          value="0"
           trend={{ value: "Action Required", isPositive: true }}
           description="Awaiting your response"
           icon={Clock}
         />
         <StatCard
-          label="Pipeline Value"
-          value="$16,900"
-          trend={{ value: "+18% mo", isPositive: true }}
-          description="Inquiry gross volume"
-          icon={DollarSign}
-        />
-        <StatCard
-          label="Studio Tier"
+          label="Current Subscription Plan"
           value={vendorUser.vendorTier === "premium" ? "Premium" : "Free Plan"}
           description="3 of 3 slots used"
         />

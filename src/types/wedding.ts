@@ -61,6 +61,7 @@ export interface WeddingService {
   vendorId: string;
   vendorName: string;
   vendorEmail: string;
+  vendorImage?: string;
   price: number;
   priceUnit: string;
   location: string;
@@ -80,6 +81,7 @@ export interface IWeddingService {
   vendorId: string;
   vendorName: string;
   vendorEmail: string;
+  vendorImage?: string;
   price: number;
   priceUnit: string;
   location: string;

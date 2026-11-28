@@ -25,8 +25,8 @@ export function VendorInfoCard({ service }: VendorInfoCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <Avatar className="size-12 border border-zinc-200">
-            {service.vendorAvatar && (
-              <AvatarImage src={service.vendorAvatar} alt={service.vendorName} />
+            {service.vendorImage && (
+              <AvatarImage src={service.vendorImage} alt={service.vendorName} />
             )}
             <AvatarFallback className="bg-rose-50 text-rosewood text-sm font-serif font-bold">
               {getInitials(service.vendorName)}
@@ -50,7 +50,7 @@ export function VendorInfoCard({ service }: VendorInfoCardProps) {
       <div className="pt-3 border-t border-zinc-200/70 space-y-2 text-xs text-zinc-600">
         <div className="flex items-center gap-2">
           <Mail className="size-3.5 text-zinc-400 shrink-0" />
-          <span className="truncate">contact@{service.slug.split("-")[0]}.wedplan.com</span>
+          <span className="truncate">contact@{service.vendorName.toLowerCase().split(" ")[0]}.wedplan.com</span>
         </div>
         <div className="flex items-center gap-2 text-botanical-sage font-medium">
           <CheckCircle2 className="size-3.5 shrink-0" />
