@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, MapPin, CheckCircle2, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Calendar, MapPin, CheckCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,19 +17,38 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { WeddingService } from "@/types/wedding";
+import { useSession } from "@/lib/auth-client";
+import { apiFetch } from "@/lib/fetcher";
+import type { ApiResponse, WeddingService } from "@/types/wedding";
 
 interface BookingRequestModalProps {
   service: WeddingService;
   triggerButton?: React.ReactNode;
 }
 
+function getServiceImage(service: WeddingService): string {
+  const s = service as WeddingService & {
+    featuredImage?: string;
+    image?: string;
+    images?: string | string[];
+  };
+  if (s.featuredImage) return s.featuredImage;
+  if (s.image) return s.image;
+  if (Array.isArray(s.images)) return s.images[0] || "";
+  return typeof s.images === "string" ? s.images : "";
+}
+
 export function BookingRequestModal({
   service,
   triggerButton,
 }: BookingRequestModalProps) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const user = session?.user;
+
   const [open, setOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
   const [eventDate, setEventDate] = useState("");
@@ -36,18 +56,64 @@ export function BookingRequestModal({
   const [guestCount, setGuestCount] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Pure presentational UI: simulate submission
-    setIsSubmitted(true);
-    toast.success("Booking Request Sent!", {
-      description: `Inquiry sent to ${service.vendorName}. They will review your requested date.`,
-    });
+
+    if (!user) {
+      toast.error("Please sign in with a Customer account to book.");
+      return;
+    }
+
+    const s = service as WeddingService & { _id?: string; id?: string };
+    const bookingPayload = {
+      serviceId: s._id || s.id || "",
+      serviceName: service.title,
+      serviceCategory: service.category,
+      serviceImage: getServiceImage(service),
+      vendorId: service.vendorId,
+      vendorName: service.vendorName,
+      vendorEmail: service.vendorEmail,
+      customerId: user.id,
+      customerName: user.name,
+      customerEmail: user.email,
+      eventDate,
+      eventLocation,
+      guestCount: guestCount ? Number(guestCount) : undefined,
+      totalAmount: Number(service.price) || 0,
+      specialNotes: message.trim() || undefined,
+    };
+
+    setIsSubmitting(true);
+    try {
+      const res = await apiFetch<ApiResponse<unknown>>("/bookings", {
+        method: "POST",
+        body: JSON.stringify(bookingPayload),
+      });
+
+      if (res.success) {
+        setIsSubmitted(true);
+        toast.success("Booking request sent", {
+          description: `Inquiry sent to ${service.vendorName}. They will review your requested date.`,
+        });
+        router.refresh();
+      } else {
+        toast.error("Failed to send booking request");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while submitting your booking."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setIsSubmitted(false);
     setEventDate("");
+    setEventLocation(service.location || "");
     setMessage("");
     setGuestCount("");
   };
@@ -65,41 +131,51 @@ export function BookingRequestModal({
           triggerButton ? (
             (triggerButton as React.ReactElement)
           ) : (
-            <Button className="w-full bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-11 font-medium transition-colors shadow-xs">
-              Request Booking
+            <Button className="w-full bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 font-medium transition-colors">
+              Request booking
             </Button>
           )
         }
       />
 
-      <DialogContent className="sm:max-w-md bg-pure-alabaster border border-zinc-200 rounded-2xl p-6 shadow-xl">
+      <DialogContent className="sm:max-w-md bg-pure-alabaster border border-border rounded-xl p-6">
         {isSubmitted ? (
           // Success Feedback
           <div className="py-6 text-center space-y-4">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-50 text-botanical-sage border border-emerald-200">
-              <CheckCircle2 className="size-7" />
+            <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-emerald-50 text-botanical-sage border border-emerald-200">
+              <CheckCircle2 className="size-6" strokeWidth={1.5} />
             </div>
             <div className="space-y-1.5">
-              <DialogTitle className="font-serif text-2xl font-semibold text-deep-ink">
-                Booking Request Sent
+              <DialogTitle className="font-serif text-2xl font-medium text-deep-ink">
+                Booking request sent
               </DialogTitle>
-              <DialogDescription className="font-sans text-sm text-zinc-600 max-w-sm mx-auto leading-relaxed">
-                Your request has been delivered to <strong>{service.vendorName}</strong>.
-                They typically review availability and reply within 24 to 48 hours.
+              <DialogDescription className="font-sans text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Your request has been delivered to{" "}
+                <strong className="font-medium text-deep-ink">
+                  {service.vendorName}
+                </strong>
+                . They typically review availability within 24 to 48 hours.
               </DialogDescription>
             </div>
-            <div className="p-3 bg-soft-pearl rounded-xl text-xs text-zinc-600 border border-zinc-200/70 text-left space-y-1">
+            <div className="p-3 bg-soft-pearl rounded-lg text-xs text-muted-foreground border border-border text-left space-y-1">
               <p>
-                <strong>Service:</strong> {service.title}
+                <strong className="font-medium text-deep-ink">Service:</strong>{" "}
+                {service.title}
               </p>
               {eventDate && (
                 <p>
-                  <strong>Target Date:</strong> {eventDate}
+                  <strong className="font-medium text-deep-ink">
+                    Target date:
+                  </strong>{" "}
+                  {eventDate}
                 </p>
               )}
               {eventLocation && (
                 <p>
-                  <strong>Celebration Location:</strong> {eventLocation}
+                  <strong className="font-medium text-deep-ink">
+                    Location:
+                  </strong>{" "}
+                  {eventLocation}
                 </p>
               )}
             </div>
@@ -108,9 +184,9 @@ export function BookingRequestModal({
                 render={
                   <Button
                     onClick={() => setOpen(false)}
-                    className="w-full bg-deep-ink hover:bg-black text-white rounded-xl h-10 font-medium"
+                    className="w-full bg-deep-ink hover:bg-deep-ink/90 text-pure-alabaster rounded-lg h-10 font-medium"
                   >
-                    Close Window
+                    Close window
                   </Button>
                 }
               />
@@ -120,39 +196,39 @@ export function BookingRequestModal({
           // Booking Form
           <form onSubmit={handleSubmit} className="space-y-4">
             <DialogHeader className="space-y-1 text-left">
-              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-rosewood uppercase tracking-wider">
-                <Sparkles className="size-3" />
-                <span>Direct Date Inquiry</span>
-              </div>
-              <DialogTitle className="font-serif text-2xl font-semibold text-deep-ink tracking-tight">
+              <p className="text-xs font-medium text-rosewood">
+                Direct date inquiry
+              </p>
+              <DialogTitle className="font-serif text-2xl font-medium text-deep-ink tracking-tight">
                 Request {service.title}
               </DialogTitle>
-              <DialogDescription className="text-xs text-zinc-500 font-sans">
-                Submit your celebration details directly to {service.vendorName}. No charges apply today.
+              <DialogDescription className="text-xs text-muted-foreground font-sans">
+                Submit your celebration details directly to {service.vendorName}.
+                No charges apply today.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3.5 pt-2">
               {/* Event Date Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-deep-ink flex items-center gap-1.5">
-                  <Calendar className="size-3.5 text-zinc-400" />
-                  <span>Celebration Event Date</span>
+                <label className="text-xs font-medium text-deep-ink flex items-center gap-1.5">
+                  <Calendar className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+                  <span>Celebration event date</span>
                 </label>
                 <Input
                   type="date"
                   required
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
-                  className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+                  className="rounded-lg bg-pure-alabaster border-border h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
                 />
               </div>
 
               {/* Event Location Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-deep-ink flex items-center gap-1.5">
-                  <MapPin className="size-3.5 text-zinc-400" />
-                  <span>Event Location / Venue</span>
+                <label className="text-xs font-medium text-deep-ink flex items-center gap-1.5">
+                  <MapPin className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+                  <span>Event location / venue</span>
                 </label>
                 <Input
                   type="text"
@@ -160,46 +236,48 @@ export function BookingRequestModal({
                   placeholder="e.g. Napa Valley, CA or Private Estate"
                   value={eventLocation}
                   onChange={(e) => setEventLocation(e.target.value)}
-                  className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+                  className="rounded-lg bg-pure-alabaster border-border h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
                 />
               </div>
 
               {/* Guest Count Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-deep-ink">
-                  Estimated Guest Count (Optional)
+                <label className="text-xs font-medium text-deep-ink">
+                  Estimated guest count (optional)
                 </label>
                 <Input
                   type="number"
+                  min="1"
                   placeholder="e.g. 150"
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
-                  className="rounded-xl bg-white border-zinc-200 h-10 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+                  className="rounded-lg bg-pure-alabaster border-border h-10 text-sm tabular-nums focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
                 />
               </div>
 
               {/* Additional Message Textarea */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-deep-ink">
-                  Additional Message or Special Vision
+                <label className="text-xs font-medium text-deep-ink">
+                  Additional notes
                 </label>
                 <Textarea
                   rows={3}
-                  placeholder="Share details about your wedding cadence, specific requests, or consultation timeline..."
+                  placeholder="Share details about your wedding schedule, specific requests, or consultation timeline"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="rounded-xl bg-white border-zinc-200 text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
+                  className="rounded-lg bg-pure-alabaster border-border text-sm focus-visible:ring-rosewood/30 focus-visible:border-rosewood"
                 />
               </div>
             </div>
 
-            <DialogFooter className="pt-3 border-t border-zinc-100 flex flex-col-reverse sm:flex-row gap-2">
+            <DialogFooter className="pt-3 border-t border-border flex flex-col-reverse sm:flex-row gap-2">
               <DialogClose
                 render={
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-xl border-zinc-200 text-zinc-700 h-10 text-sm font-medium w-full sm:w-auto"
+                    disabled={isSubmitting}
+                    className="rounded-lg border-border text-deep-ink h-10 text-sm font-medium w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
@@ -207,9 +285,10 @@ export function BookingRequestModal({
               />
               <Button
                 type="submit"
-                className="bg-rosewood hover:bg-rosewood-hover text-white rounded-xl h-10 text-sm font-medium transition-colors shadow-xs w-full sm:w-auto"
+                disabled={isSubmitting}
+                className="bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-10 text-sm font-medium transition-colors w-full sm:w-auto"
               >
-                Submit Request
+                {isSubmitting ? "Submitting..." : "Submit request"}
               </Button>
             </DialogFooter>
           </form>

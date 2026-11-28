@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, XCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Calendar, XCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/fetcher";
 import type { BookingRequest } from "@/types/wedding";
 
 interface BookingsTableProps {
@@ -30,20 +32,33 @@ export function BookingsTable({
   limit,
   showViewAll = false,
 }: BookingsTableProps) {
+  const router = useRouter();
   const [bookingsList, setBookingsList] = useState<BookingRequest[]>(initialBookings);
   const [cancelledId, setCancelledId] = useState<string | null>(null);
 
   const displayed = limit ? bookingsList.slice(0, limit) : bookingsList;
 
-  const handleCancelBooking = (id: string) => {
-    setBookingsList((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
-    );
-    setCancelledId(id);
-    toast.info("Booking request cancelled", {
-      description: "The vendor has been notified of your cancellation.",
-    });
-    setTimeout(() => setCancelledId(null), 3000);
+  const handleCancelBooking = async (id: string) => {
+    try {
+      await apiFetch(`/bookings/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+
+      setBookingsList((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
+      );
+      setCancelledId(id);
+      toast.info("Booking request cancelled", {
+        description: "The vendor has been notified of your cancellation.",
+      });
+      setTimeout(() => setCancelledId(null), 3000);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to cancel booking"
+      );
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -128,14 +143,18 @@ export function BookingsTable({
                   {/* Service Thumbnail + Title */}
                   <TableCell className="py-4 pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 border border-zinc-200">
-                        <Image
-                          src={booking.serviceImage}
-                          alt={booking.serviceName}
-                          fill
-                          sizes="60px"
-                          className="object-cover"
-                        />
+                      <div className="relative aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-lg bg-soft-pearl border border-border flex items-center justify-center">
+                        {booking.serviceImage ? (
+                          <Image
+                            src={booking.serviceImage}
+                            alt={booking.serviceName}
+                            fill
+                            sizes="60px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <Calendar className="size-4 text-muted-foreground" strokeWidth={1.5} />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <Link

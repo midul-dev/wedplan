@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import {
   CalendarCheck2,
   Clock,
@@ -11,26 +12,41 @@ import {
 import { StatCard } from "@/components/shared/StatCard";
 import { BookingsTable } from "@/components/dashboard/BookingsTable";
 import { buttonVariants } from "@/components/ui/button";
-import { MOCK_BOOKINGS } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { apiFetch } from "@/lib/fetcher";
+import type { ApiResponse, BookingRequest } from "@/types/wedding";
+
+type BookingDoc = BookingRequest & { _id?: string };
 
 export default async function CustomerOverviewPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  const userName = session?.user?.name ?? "Guest";
-  const pendingCount = MOCK_BOOKINGS.filter(
-    (b) => b.status === "pending",
-  ).length;
-  const acceptedCount = MOCK_BOOKINGS.filter(
-    (b) => b.status === "accepted",
-  ).length;
-  const rejectedCount = MOCK_BOOKINGS.filter(
-    (b) => b.status === "rejected",
-  ).length;
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
+  let bookings: BookingRequest[] = [];
+
+  try {
+    const res = await apiFetch<ApiResponse<BookingDoc[]>>(
+      `/bookings?customerId=${session.user.id}`,
+      { cache: "no-store" }
+    );
+    bookings = (res.data ?? []).map((b) => ({
+      ...b,
+      id: b._id || b.id,
+    }));
+  } catch {
+    bookings = [];
+  }
+
+  const userName = session.user.name ?? "Guest";
+  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+  const acceptedCount = bookings.filter((b) => b.status === "accepted").length;
+  const rejectedCount = bookings.filter((b) => b.status === "rejected").length;
 
   return (
     <div className="space-y-8">
@@ -62,11 +78,11 @@ export default async function CustomerOverviewPage() {
         </div>
       </div>
 
-      {/* 4 StatCards Grid with 8px rhythm (gap-6) */}
+      {/* 4 StatCards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Total Inquiries"
-          value={MOCK_BOOKINGS.length}
+          value={bookings.length}
           description="Services contacted"
           icon={CalendarCheck2}
         />
@@ -97,22 +113,22 @@ export default async function CustomerOverviewPage() {
       <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-serif text-xl font-semibold text-deep-ink tracking-tight">
-              Recent Booking Inquiries
+            <h2 className="font-serif text-xl font-medium text-deep-ink tracking-tight">
+              Recent booking inquiries
             </h2>
-            <p className="text-xs text-zinc-500 font-sans mt-0.5">
+            <p className="text-xs text-muted-foreground font-sans mt-0.5">
               Direct inquiries submitted to vendor calendars
             </p>
           </div>
           <Link
             href="/dashboard/customer/bookings"
-            className="text-xs font-semibold text-rosewood hover:underline"
+            className="text-xs font-medium text-rosewood hover:underline tabular-nums"
           >
-            View All ({MOCK_BOOKINGS.length})
+            View all ({bookings.length})
           </Link>
         </div>
 
-        <BookingsTable bookings={MOCK_BOOKINGS} limit={3} showViewAll={true} />
+        <BookingsTable bookings={bookings} limit={3} showViewAll={true} />
       </div>
     </div>
   );
