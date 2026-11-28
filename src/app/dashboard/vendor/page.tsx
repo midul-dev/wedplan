@@ -1,15 +1,21 @@
 import Link from "next/link";
-import { Store, CalendarCheck2, Clock, DollarSign, Plus } from "lucide-react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { Store, CalendarCheck2, Clock, Plus } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { VendorBookingRequestsTable } from "@/components/dashboard/VendorBookingRequestsTable";
 import { buttonVariants } from "@/components/ui/button";
-import { MOCK_BOOKINGS, MOCK_SERVICES, MOCK_USERS } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { ApiResponse, IUser, IWeddingService } from "@/types/wedding";
 import { apiFetch } from "@/lib/fetcher";
+import type {
+  ApiResponse,
+  BookingRequest,
+  IUser,
+  IWeddingService,
+} from "@/types/wedding";
+
+type BookingDoc = BookingRequest & { _id?: string };
 
 export default async function VendorOverviewPage() {
   const session = await auth.api.getSession({
@@ -22,12 +28,26 @@ export default async function VendorOverviewPage() {
 
   const vendorUser: IUser = session.user;
 
-  const res = await apiFetch<ApiResponse<IWeddingService[]>>(
-    `/service?vendorId=${vendorUser.id}`,
-    { cache: "no-store" },
-  );
-  const services: IWeddingService[] = res.data ?? [];
-  const activeService = services.filter((s) => s.isActive === true)
+  const [servicesRes, bookingsRes] = await Promise.all([
+    apiFetch<ApiResponse<IWeddingService[]>>(
+      `/service?vendorId=${vendorUser.id}`,
+      { cache: "no-store" }
+    ).catch(() => ({ success: false, data: [] as IWeddingService[] })),
+    apiFetch<ApiResponse<BookingDoc[]>>(
+      `/bookings?vendorId=${vendorUser.id}`,
+      { cache: "no-store" }
+    ).catch(() => ({ success: false, data: [] as BookingDoc[] })),
+  ]);
+
+  const services: IWeddingService[] = servicesRes.data ?? [];
+  const activeService = services.filter((s) => s.isActive === true);
+
+  const bookings: BookingRequest[] = (bookingsRes.data ?? []).map((b) => ({
+    ...b,
+    id: b._id || b.id,
+  }));
+  const acceptedCount = bookings.filter((b) => b.status === "accepted").length;
+  const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
   return (
     <div className="space-y-8">
@@ -49,7 +69,7 @@ export default async function VendorOverviewPage() {
             href="/dashboard/vendor/add-service"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium",
+              "bg-rosewood hover:bg-rosewood-hover text-pure-alabaster rounded-lg h-9 px-4 text-sm font-medium"
             )}
           >
             <Plus className="size-4 mr-1.5" strokeWidth={1.5} />
@@ -74,14 +94,14 @@ export default async function VendorOverviewPage() {
         />
         <StatCard
           label="Accepted Bookings"
-          value="0"
+          value={acceptedCount}
           trend={{ value: "Confirmed", isPositive: true }}
           description="Active client events"
           icon={CalendarCheck2}
         />
         <StatCard
           label="Pending Booking Requests"
-          value="0"
+          value={pendingCount}
           trend={{ value: "Action Required", isPositive: true }}
           description="Awaiting your response"
           icon={Clock}
@@ -97,22 +117,22 @@ export default async function VendorOverviewPage() {
       <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-serif text-xl font-semibold text-deep-ink tracking-tight">
-              Recent Client Inquiries
+            <h2 className="font-serif text-xl font-medium text-deep-ink tracking-tight">
+              Recent client inquiries
             </h2>
-            <p className="text-xs text-zinc-500 font-sans mt-0.5">
+            <p className="text-xs text-muted-foreground font-sans mt-0.5">
               Review event dates and decide to accept or decline bookings
             </p>
           </div>
           <Link
             href="/dashboard/vendor/bookings"
-            className="text-xs font-semibold text-rosewood hover:underline"
+            className="text-xs font-medium text-rosewood hover:underline tabular-nums"
           >
-            View All Requests ({MOCK_BOOKINGS.length})
+            View all requests ({bookings.length})
           </Link>
         </div>
 
-        <VendorBookingRequestsTable bookings={MOCK_BOOKINGS} limit={3} />
+        <VendorBookingRequestsTable bookings={bookings} limit={3} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, X, CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Table,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { apiFetch } from "@/lib/fetcher";
 import type { BookingRequest } from "@/types/wedding";
 
 interface VendorBookingRequestsTableProps {
@@ -26,35 +27,52 @@ export function VendorBookingRequestsTable({
   bookings: initialBookings,
   limit,
 }: VendorBookingRequestsTableProps) {
+  const router = useRouter();
   const [requests, setRequests] = useState<BookingRequest[]>(initialBookings);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; isAccept: boolean } | null>(null);
 
   const displayed = limit ? requests.slice(0, limit) : requests;
 
-  const handleAction = (id: string, action: "accepted" | "rejected") => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: action } : r))
-    );
-    const isAccept = action === "accepted";
-    const msg = isAccept
-      ? "Booking accepted! Client has been notified."
-      : "Inquiry declined. The requested date is freed up.";
-    setFeedback({
-      message: msg,
-      isAccept,
-    });
+  const handleAction = async (id: string, action: "accepted" | "rejected") => {
+    setUpdatingId(id);
+    try {
+      await apiFetch(`/bookings/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: action }),
+      });
 
-    if (isAccept) {
-      toast.success("Booking Accepted", {
-        description: "The couple has been notified to proceed with event planning.",
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: action } : r))
+      );
+      const isAccept = action === "accepted";
+      const msg = isAccept
+        ? "Booking accepted. Client has been notified."
+        : "Inquiry declined. The requested date is freed up.";
+      setFeedback({
+        message: msg,
+        isAccept,
       });
-    } else {
-      toast.info("Booking Declined", {
-        description: "The date has been released and the client notified.",
-      });
+
+      if (isAccept) {
+        toast.success("Booking accepted", {
+          description: "The couple has been notified to proceed with event planning.",
+        });
+      } else {
+        toast.info("Booking declined", {
+          description: "The date has been released and the client notified.",
+        });
+      }
+
+      setTimeout(() => setFeedback(null), 3000);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update booking status"
+      );
+    } finally {
+      setUpdatingId(null);
     }
-
-    setTimeout(() => setFeedback(null), 3000);
   };
 
   const formatDate = (dateStr: string) => {
@@ -187,6 +205,7 @@ export function VendorBookingRequestsTable({
                         {/* Accept Button: Botanical Sage #15803D */}
                         <Button
                           size="sm"
+                          disabled={updatingId === req.id}
                           onClick={() => handleAction(req.id, "accepted")}
                           className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg h-8 px-2.5 text-xs font-medium cursor-pointer shadow-xs"
                         >
@@ -198,6 +217,7 @@ export function VendorBookingRequestsTable({
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={updatingId === req.id}
                           onClick={() => handleAction(req.id, "rejected")}
                           className="border-rose-300 text-rose-700 hover:bg-rose-50 rounded-lg h-8 px-2.5 text-xs font-medium cursor-pointer"
                         >
