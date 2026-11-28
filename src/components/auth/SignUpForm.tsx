@@ -14,13 +14,47 @@ export function SignUpForm() {
   const router = useRouter();
   const [role, setRole] = useState<"customer" | "vendor">("customer");
   const [showPassword, setShowPassword] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFileName(e.target.files[0].name);
-    }
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
+       const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 2 * 1024 * 1024) {
+            toast.error("File too large", {
+              description: "Please upload an image smaller than 2MB.",
+            });
+            return;
+          }
+      
+          const formData = new FormData();
+          formData.append("image", file);
+      
+          const toastId = toast.loading("Uploading image...");
+      
+          try {
+            const res = await fetch(
+              `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+              {
+                method: "POST",
+                body: formData,
+              },
+            );
+            const data = await res.json();
+            if (data.success) {
+              setFileUrl(data.data.display_url); 
+              toast.success("Image uploaded!", { id: toastId });
+            } else {
+              throw new Error(data.error?.message || "Upload failed");
+            }
+          } catch (error) {
+            toast.error("Upload failed", {
+              id: toastId,
+              description: "Something went wrong while uploading.",
+            });
+          }
+
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,6 +76,7 @@ export function SignUpForm() {
           password: user.password,
           name: user.name,
           role: role,
+          image: fileUrl ?? undefined,
         },
         {
           onRequest: () => {
@@ -193,10 +228,10 @@ export function SignUpForm() {
               onChange={handleFileChange}
               className="sr-only"
             />
-            {fileName ? (
+            {fileUrl ? (
               <div className="flex items-center gap-2 text-xs text-botanical-sage font-medium">
                 <Check className="size-3.5" />
-                <span className="truncate max-w-[200px]">{fileName}</span>
+                <span className="truncate max-w-[200px]">{fileUrl}</span>
               </div>
             ) : (
               <div className="space-y-1">
